@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Web.Api.Common;
+using Web.Api.Features.Leases;
+using Web.Api.Features.Properties;
 using Web.Api.Features.Users;
 
 namespace Web.Api.Database;
@@ -12,6 +14,12 @@ public sealed class ApplicationDbContext(
     public DbSet<User> Users { get; set; }
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+
+    public DbSet<Property> Properties { get; set; }
+
+    public DbSet<Lease> Leases { get; set; }
+
+    public DbSet<Payment> Payments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
