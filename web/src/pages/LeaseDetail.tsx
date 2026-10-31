@@ -106,7 +106,7 @@ export default function LeaseDetail() {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Item label="Arrendatario" value={lease.tenantFullName} />
             <Item label="Documento" value={`${docTypeLabel[lease.tenantDocumentType] ?? lease.tenantDocumentType} ${lease.tenantDocumentNumber}`} />
-            <Item label="Celular" value={lease.tenantPhone} />
+            <Item label="Celular" value={lease.tenantPhone || '—'} />
             <Item label="Correo" value={lease.tenantEmail || '—'} />
             <Item label="Vigencia" value={`${formatDate(lease.startDate)} – ${formatDate(lease.endDate)}`} />
             <Item label="Alquiler mensual" value={formatMoney(lease.monthlyRent)} />
