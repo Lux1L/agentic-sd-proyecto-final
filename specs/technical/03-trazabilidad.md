@@ -51,15 +51,15 @@ Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-31: **1
 
 ## Pruebas E2E en Google Chrome (`web/e2e/`, Playwright)
 
-Se corren con `cd web && pnpm e2e` (con la API y Vite levantados). Son 19 tests sobre el Chrome instalado, con `locale es-PE` y `timezoneId America/Lima`. Cada spec que muta datos crea su propia propiedad por API.
+Se corren con `cd web && pnpm e2e` (con la API y Vite levantados). Son 22 tests sobre el Chrome instalado, con `locale es-PE` y `timezoneId America/Lima`. Cada spec que muta datos crea su propia propiedad por API.
 
 | Spec | Tests | HU / RF | RN |
 |---|---|---|---|
 | `login.spec.ts` | 2 | RF-00 | RNF-03 (credenciales inválidas: mensaje genérico en español) |
 | `sesion.spec.ts` | 2 | RF-00 | RNF-03 (sin token → /login) |
-| `resumen.spec.ts` | 2 | HU-07 (RF-07) | RN-16, RN-17 |
+| `resumen.spec.ts` | 4 | HU-07 (RF-07), HU-04 (RF-04) | RN-16, RN-17 (bandeja de cobranza: orden de grupos, copy del atraso, registrar pago desde el inicio) |
 | `banner-deuda.spec.ts` | 2 | HU-05 (RF-05), HU-02 (RF-02) | RN-17 (deuda vencida), RN-08 (día de pago 1–28) |
 | `detalle-errores.spec.ts` | 3 | HU-04 (RF-04), HU-06 (RF-06) | RN-14 (sobrepago), RN-11 (terminar con deuda), RN-13 (período dentro del contrato) |
 | `nuevo-contrato.spec.ts` | 1 (flujo completo) | HU-02, HU-04, HU-05 | RN-09 (RUC módulo 11), RN-15, RN-16 (Parcial), RN-05 (solapamiento) |
-| `fecha-lima.spec.ts` | 1 | HU-04 | RN-18 (corre en `Asia/Tokyo`: la fecha por defecto debe ser la de Lima) |
+| `fecha-lima.spec.ts` | 2 | HU-04 | RN-18 (corre en `Asia/Tokyo`: la fecha por defecto debe ser la de Lima, en el detalle y desde el inicio) |
 | `contratos.spec.ts` | 6 | HU-03 (RF-03) | Filtro por estado, búsqueda, estado vacío, navegación y paginación |
