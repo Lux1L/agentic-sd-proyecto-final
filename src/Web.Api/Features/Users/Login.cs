@@ -36,14 +36,14 @@ public static class Login
 
             if (user is null)
             {
-                return Result.Failure<AccessTokensResponse>(UserErrors.NotFoundByEmail);
+                return Result.Failure<AccessTokensResponse>(UserErrors.InvalidCredentials);
             }
 
             bool verified = passwordHasher.Verify(command.Password, user.PasswordHash);
 
             if (!verified)
             {
-                return Result.Failure<AccessTokensResponse>(UserErrors.NotFoundByEmail);
+                return Result.Failure<AccessTokensResponse>(UserErrors.InvalidCredentials);
             }
 
             string accessToken = tokenProvider.Create(user);

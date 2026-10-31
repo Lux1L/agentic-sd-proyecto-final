@@ -15,7 +15,8 @@ test.describe('Login', () => {
     await page.goto('/login')
     await page.getByLabel('Contraseña').fill('Incorrecta123!')
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
-    await expect(page.getByText(/Users\.\w+|credenciales|no se pudo/i).first()).toBeVisible()
+    // Mensaje genérico en español: no revela si el correo existe.
+    await expect(page.getByText(/Correo o contraseña incorrectos/i).first()).toBeVisible()
     await expect(page).toHaveURL(/\/login$/)
   })
 })

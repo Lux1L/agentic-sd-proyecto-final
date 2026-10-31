@@ -30,7 +30,7 @@ public sealed class LoginHandlerTests : BaseHandlerTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.ShouldBe(UserErrors.NotFoundByEmail);
+        result.Error.ShouldBe(UserErrors.InvalidCredentials);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class LoginHandlerTests : BaseHandlerTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.ShouldBe(UserErrors.NotFoundByEmail);
+        result.Error.ShouldBe(UserErrors.InvalidCredentials);
     }
 
     [Fact]

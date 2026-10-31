@@ -6,21 +6,27 @@ public static class UserErrors
 {
     public static Error NotFound(Guid userId) => Error.NotFound(
         "Users.NotFound",
-        $"The user with the Id = '{userId}' was not found");
+        $"No se encontró el usuario con Id = '{userId}'");
 
-    public static Error Unauthorized() => Error.Failure(
+    // Problem (400), no Failure: Failure se traduce a 500 (ADR-003).
+    public static Error Unauthorized() => Error.Problem(
         "Users.Unauthorized",
-        "You are not authorized to perform this action.");
+        "No tienes permiso para realizar esta acción");
 
     public static readonly Error NotFoundByEmail = Error.NotFound(
         "Users.NotFoundByEmail",
-        "The user with the specified email was not found");
+        "No se encontró un usuario con ese correo");
+
+    // El mismo error para correo inexistente y contraseña incorrecta: no revela qué correos existen.
+    public static readonly Error InvalidCredentials = Error.Problem(
+        "Users.InvalidCredentials",
+        "Correo o contraseña incorrectos");
 
     public static readonly Error EmailNotUnique = Error.Conflict(
         "Users.EmailNotUnique",
-        "The provided email is not unique");
+        "Ya existe un usuario con ese correo");
 
     public static readonly Error InvalidRefreshToken = Error.Problem(
         "Users.InvalidRefreshToken",
-        "The provided refresh token is invalid or has expired");
+        "El refresh token no es válido o expiró");
 }

@@ -64,3 +64,14 @@ Un agente Sonnet ejecutó la skill en **solo lectura** sobre todo lo construido 
 | VR-7 | Paginación inconsistente: Properties no limitaba `pageSize`. | ✅ Aplicado | Ya se había visto en I7 y se dejó pasar; ahora se unificó con el criterio de Leases (1–100). |
 | VR-8 | Diffs con archivos completos reescritos (CRLF → LF). | ✅ Aplicado — **error del orquestador** | Un script de Python de Opus convirtió 10 archivos de CRLF a LF. Se restauraron (`0b00d30`) y se agregó la regla a `CLAUDE.md`. |
 | VR-9 | Contraseña de demo fija en el seeder. | ❌ Descartado | Solo corre en Development, el seeder es idempotente y la contraseña está documentada en el README. |
+
+## Prueba E2E en Google Chrome
+
+| # | Origen | Hallazgo | Resultado | Detalle |
+|---|---|---|---|---|
+| E1 | Opus, recorrido manual en el Chrome del humano (extensión, con grabación) | La **fecha de pago por defecto usaba la zona horaria del navegador**. Desde UTC−3, pasada la medianoche local, mostraba 31/10 cuando en Lima era 30/10, y la API la rechazaría como fecha futura (RN-18). | ✅ corregido | `todayIso()` ahora usa `America/Lima` (`1a51ce2`). Test E2E de regresión que corre con `timezoneId: Asia/Tokyo`. Los tests unitarios no lo podían detectar: el defecto estaba en la frontera navegador ↔ API. |
+| E2 | Agente E2E (Sonnet) | Con contraseña incorrecta, el login respondía **404 `Users.NotFoundByEmail` en inglés**: código engañoso (el correo sí existe) y fuera de la regla de errores en español. | ✅ corregido | Opus lo reprodujo con curl antes de corregir. Se creó `Users.InvalidCredentials` (400, "Correo o contraseña incorrectos"), el mismo error para ambos casos para no revelar qué correos existen. TDD: primero se cambiaron los tests unitarios (no compilaban). De paso, `Users.Unauthorized` usaba `Error.Failure` (→ 500, contra ADR-003) y pasó a `Problem`. Se tradujeron los mensajes de Users. |
+| E3 | Opus | "Celular" vacío se mostraba en blanco y "Correo" vacío como "—". | ✅ corregido | `2fa1ae3`. |
+| E4 | Agente E2E | El rate limit del login (10/min) cortaba la suite con 429. | ✅ resuelto en el test | `globalSetup` hace login una vez por API y reutiliza el token. No es un defecto de la app: el rate limit es intencional (RNF-03). |
+
+Resultado: **10 tests E2E con Playwright sobre Google Chrome** (`channel: 'chrome'`, `locale es-PE`, `timezoneId America/Lima`), en verde en 3 corridas (2 del agente y 1 del orquestador tras las correcciones).
