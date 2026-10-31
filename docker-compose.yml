@@ -13,6 +13,8 @@ services:
       - 127.0.0.1:${API_PORT:-5080}:8080
     profiles: [ "app", "full" ]
     environment:
+      # Development: aplica migraciones, carga los datos de demo y expone Scalar (Dokploy no lee el override).
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Database=Host=postgres;Port=5432;Database=arriendo-familiar;Username=postgres;Include Error Detail=true
     secrets:
       - source: db_password
