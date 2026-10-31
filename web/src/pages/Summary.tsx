@@ -76,10 +76,10 @@ export default function Summary() {
                       </Text>
                     </div>
                   )}
-                  {leased && p.monthlyRent != null && (p.currentPeriodStatus === 'Paid' || p.currentPeriodStatus === 'Pending') && (
+                  {leased && p.monthlyRent != null && p.monthlyRent > 0 && p.currentPeriodPaid != null && (
                     <Meter
-                      label={`Mes actual: ${formatMoney(p.currentPeriodStatus === 'Paid' ? p.monthlyRent : 0)} de ${formatMoney(p.monthlyRent)}`}
-                      value={p.currentPeriodStatus === 'Paid' ? 100 : 0}
+                      label={`Mes actual: ${formatMoney(p.currentPeriodPaid)} de ${formatMoney(p.monthlyRent)}`}
+                      value={Math.min(100, Math.round((p.currentPeriodPaid / p.monthlyRent) * 100))}
                       showValue={false}
                     />
                   )}

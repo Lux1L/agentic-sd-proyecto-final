@@ -68,6 +68,8 @@ public sealed class PortfolioTests(IntegrationTestWebAppFactory factory) : BaseI
         upToDate.GetProperty("currentPeriodStatus").GetString().ShouldBe("Paid");
         upToDate.GetProperty("overdueDebt").GetDecimal().ShouldBe(0m);
         upToDate.GetProperty("tenantFullName").GetString().ShouldBe("Inquilino Al Día");
+        // Lo abonado en el período actual (alimenta el Meter del resumen).
+        upToDate.GetProperty("currentPeriodPaid").GetDecimal().ShouldBe(1000m);
 
         // El período actual vence el día 1 (hoy >= día 1): si ya pasó el día 1, está atrasado.
         // Períodos vencidos sin pago: el mes -1 siempre, y el actual si hoy > día 1.
@@ -75,6 +77,7 @@ public sealed class PortfolioTests(IntegrationTestWebAppFactory factory) : BaseI
         JsonElement overdue = items.Single(p => p.GetProperty("propertyId").GetGuid() == overdueProperty);
         overdue.GetProperty("overdueDebt").GetDecimal().ShouldBe(expectedDebt);
         overdue.GetProperty("currentPeriodStatus").GetString().ShouldBe(today.Day > 1 ? "Overdue" : "Pending");
+        overdue.GetProperty("currentPeriodPaid").GetDecimal().ShouldBe(0m);
 
         body.GetProperty("totalOverdueDebt").GetDecimal().ShouldBeGreaterThanOrEqualTo(expectedDebt);
         body.GetProperty("totalProperties").GetInt32().ShouldBeGreaterThanOrEqualTo(2);

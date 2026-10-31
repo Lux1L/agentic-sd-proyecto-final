@@ -23,6 +23,7 @@ public static class GetPortfolioSummary
         string? TenantFullName,
         decimal? MonthlyRent,
         PeriodStatus? CurrentPeriodStatus,
+        decimal? CurrentPeriodPaid,
         decimal OverdueDebt);
 
     public sealed record Response(
@@ -94,7 +95,7 @@ public static class GetPortfolioSummary
             if (lease is null)
             {
                 return new PropertySummary(
-                    property.Id, property.Name, property.Type, property.Status, null, null, null, null, 0m);
+                    property.Id, property.Name, property.Type, property.Status, null, null, null, null, null, 0m);
             }
 
             var statement = LeaseStatement.Calculate(lease, paymentsByLease[lease.Id], today);
@@ -108,6 +109,7 @@ public static class GetPortfolioSummary
                 lease.TenantFullName,
                 lease.MonthlyRent,
                 statement.CurrentPeriod?.Status,
+                statement.CurrentPeriod?.Paid,
                 statement.OverdueDebt);
         }
     }

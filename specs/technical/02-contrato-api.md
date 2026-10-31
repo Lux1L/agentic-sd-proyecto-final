@@ -75,7 +75,7 @@ Base: `http://localhost:5080`. Documentación interactiva en **`/scalar/v1`** (O
 
 | Método | Ruta | Respuesta |
 |---|---|---|
-| GET | `/portfolio/summary` | `200 { today, totalProperties, leasedProperties, totalOverdueDebt, properties: [{ propertyId, name, type, status, leaseId?, tenantFullName?, currentPeriodStatus?, overdueDebt }] }` |
+| GET | `/portfolio/summary` | `200 { today, totalProperties, leasedProperties, totalOverdueDebt, properties: [{ propertyId, name, type, status, leaseId?, tenantFullName?, currentPeriodStatus?, currentPeriodPaid?, overdueDebt }] }` — `currentPeriodPaid`: lo abonado en el período del mes actual (alimenta el Meter de la UI) |
 
 ## Errores de negocio (catálogo)
 

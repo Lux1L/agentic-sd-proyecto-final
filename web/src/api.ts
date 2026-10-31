@@ -79,6 +79,8 @@ export interface PortfolioProperty {
   tenantFullName?: string | null
   monthlyRent?: number | null
   currentPeriodStatus?: PeriodStatus | null
+  /** Abonado en el período del mes actual (null si no hay contrato o el mes está fuera del contrato). */
+  currentPeriodPaid?: number | null
   overdueDebt: number
 }
 export interface PortfolioSummary {
