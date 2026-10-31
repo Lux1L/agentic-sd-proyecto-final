@@ -56,9 +56,15 @@ public static class GetPortfolioSummary
                 .ToListAsync(cancellationToken);
 
             ILookup<Guid, Payment> paymentsByLease = payments.ToLookup(p => p.LeaseId);
+            // Con una renovación ya firmada puede haber dos contratos activos: se muestra el vigente hoy
+            // y, si ninguno lo está, el que empieza antes.
             var leaseByProperty = leases
                 .GroupBy(l => l.PropertyId)
-                .ToDictionary(g => g.Key, g => g.First());
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(l => l.StartDate <= today && today <= l.EndDate)
+                        .ThenBy(l => l.StartDate)
+                        .First());
 
             var summaries = properties
                 .OrderBy(p => p.Status switch
