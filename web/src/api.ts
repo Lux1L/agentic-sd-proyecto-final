@@ -82,6 +82,14 @@ export interface PortfolioProperty {
   /** Abonado en el período del mes actual (null si no hay contrato o el mes está fuera del contrato). */
   currentPeriodPaid?: number | null
   overdueDebt: number
+  /** Vencimiento del período del mes actual (YYYY-MM-DD); null si no hay contrato o el mes está fuera de él. */
+  currentPeriodDueDate?: string | null
+  /** Períodos atrasados (YYYY-MM), del más antiguo al más reciente; vacío si no hay. */
+  overduePeriods: string[]
+  /** Días de atraso del período atrasado más antiguo (0 si no hay). */
+  maxDaysOverdue: number
+  /** Vencimiento del período siguiente (YYYY-MM-DD), si está dentro del contrato. */
+  nextDueDate?: string | null
 }
 export interface PortfolioSummary {
   today: string

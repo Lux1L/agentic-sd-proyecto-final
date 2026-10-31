@@ -1,4 +1,4 @@
-# Requiere un .env con POSTGRES_PASSWORD (cp .env.example .env); llega a los contenedores como secret.
+# Requiere un .env con POSTGRES_PASSWORD y JWT_SECRET (cp .env.example .env); llegan a los contenedores como secrets.
 # `docker compose up -d`                 → solo PostgreSQL (para `dotnet run` + `pnpm dev`)
 # `docker compose --profile app up -d`   → PostgreSQL + API (5080) + frontend (5173)
 # `docker compose --profile full up -d`  → lo anterior + observabilidad (3000)
@@ -17,6 +17,8 @@ services:
     secrets:
       - source: db_password
         target: Database__Password
+      - source: jwt_secret
+        target: Jwt__Secret
     cap_drop: [ "ALL" ]
     security_opt: [ "no-new-privileges:true" ]
     healthcheck:
@@ -91,6 +93,8 @@ services:
 secrets:
   db_password:
     environment: POSTGRES_PASSWORD
+  jwt_secret:
+    environment: JWT_SECRET
 
 volumes:
   pgdata:

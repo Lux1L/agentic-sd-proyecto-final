@@ -7,7 +7,7 @@ test.describe('Banner de deuda y día de pago', () => {
   test('Local comercial A muestra el Banner de deuda con monto y períodos', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('link', { name: /Local comercial A/ }).click()
-    await expect(page.getByText('Días de atraso')).toBeVisible()
+    await expect(page.getByText('Días de atraso', { exact: true })).toBeVisible()
     const banner = page.getByText(/Este contrato tiene S\/.*vencidos en \d+ períodos?/)
     await expect(banner).toBeVisible()
     const texto = (await banner.innerText()).match(/vencidos en (\d+)/)

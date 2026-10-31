@@ -1,19 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
-import { crearPropiedad, elegirFecha, hoyLima } from './helpers'
-
-async function llenarContrato(page: Page, tipo: 'RUC' | 'DNI', doc: string) {
-  await page.getByLabel(/nombre completo/i).fill('María Quispe Huamán')
-  await page.getByLabel(/tipo de documento/i).click()
-  await page.getByRole('option', { name: new RegExp(`^${tipo}$`) }).click()
-  await page.getByLabel(/número de documento/i).fill(doc)
-  await page.getByLabel(/celular/i).fill('987654321')
-  await elegirFecha(page, /^inicio:/i, hoyLima())
-  await elegirFecha(page, /^fin:/i, hoyLima(1))
-  await page.getByLabel(/alquiler mensual/i).fill('1800')
-  await page.getByLabel(/garantía/i).fill('3600')
-  await page.getByLabel(/día de pago/i).click()
-  await page.getByRole('option', { name: /^5$/ }).click()
-}
+import { test, expect } from '@playwright/test'
+import { crearPropiedad, llenarContrato } from './helpers'
 
 test.describe('Nuevo contrato sobre propiedad propia', () => {
   // HU-02 (RF-02), HU-04 (RF-04), HU-05 (RF-05); RN-05, RN-09, RN-15
@@ -33,7 +19,7 @@ test.describe('Nuevo contrato sobre propiedad propia', () => {
       await page.getByLabel(/número de documento/i).fill('45678912')
       await page.getByRole('button', { name: /guardar contrato/i }).click()
       await expect(page).toHaveURL(/\/leases\/[0-9a-f-]+$/)
-      await expect(page.getByText('Días de atraso')).toBeVisible()
+      await expect(page.getByText('Días de atraso', { exact: true })).toBeVisible()
     })
 
     await test.step('HU-04: el período actual queda Pendiente', async () => {

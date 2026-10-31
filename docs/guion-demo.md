@@ -5,8 +5,11 @@
 Todo lo que se cree durante los ensayos queda guardado en la base. Para volver al estado inicial:
 
 ```bash
-# 1. Detén la API si está corriendo (Ctrl+C)
-./scripts/reset-demo.sh            # borra solo la base local de este repo y levanta Postgres
+# Todo en Docker (base nueva con los datos de demo):
+./scripts/reset-demo.sh app        # → http://localhost:5173
+
+# O para desarrollar (API y frontend fuera de Docker):
+./scripts/reset-demo.sh            # solo Postgres
 dotnet run --project src/Web.Api   # migra y vuelve a cargar los datos de demo
 cd web && pnpm dev                 # http://localhost:5173
 ```
@@ -21,17 +24,17 @@ Las fechas de los datos de demo se calculan desde "hoy" en hora de Lima, así qu
 
 | # | Acción | Qué se ve | Regla |
 |---|---|---|---|
-| 1 | Iniciar sesión → **Resumen** | 4 propiedades y deuda vencida total destacada en rojo | RF-07, RN-16/17 |
-| 2 | Clic en **Local comercial A** | 2 meses pagados y 3 atrasados, con días de atraso | RF-05, RN-15..18 |
-| 3 | **Registrar pago** con un monto mayor al saldo de un período | Toast `Leases.PaymentExceedsRent` con el saldo restante | RN-14 |
-| 4 | **Terminar contrato** → confirmar | Toast `Leases.HasOutstandingBalance` con el monto | RN-11 |
-| 5 | Volver → **Casa Chorrillos → Nuevo contrato**, tipo RUC `20601234560` | Error en español debajo de "Número de documento" | RN-09 (módulo 11) |
+| 1 | Iniciar sesión → **Resumen** (bandeja de cobranza) | Cobrado en octubre S/ 1,800.00 de S/ 4,950.00 y S/ 8,750.00 vencidos en 2 contratos | RF-07, RN-16/17/19 |
+| 2 | Leer la primera fila de **Por cobrar** | Local comercial A: "3 meses sin pagar (ago, set, oct) · el más antiguo venció hace 91 días" | RF-07, RN-19 |
+| 3 | **Registrar pago** en esa misma fila con un monto mayor al saldo | Toast `Leases.PaymentExceedsRent` con el saldo restante | RN-14 |
+| 4 | Clic en la fila → detalle → **Terminar contrato** → confirmar | Toast `Leases.HasOutstandingBalance` con el monto | RN-11 |
+| 5 | Volver → **Disponibles → Casa Chorrillos → Nuevo contrato**, tipo RUC `20601234560` | Error en español debajo de "Número de documento" | RN-09 (módulo 11) |
 | 6 | Cambiar a DNI `45678912`, inicio = hoy, fin = +1 año, alquiler 1800, garantía 3600, día 5 → Guardar | Detalle del contrato; el período actual vence hoy y queda **Pendiente** | RN-15 |
-| 7 | Registrar un abono de S/ 800 | El período pasa a **Parcial** | RN-16 |
+| 7 | Volver al inicio → **Registrar pago** de S/ 800 en la fila de Casa Chorrillos | La fila muestra lo abonado del mes | RN-16 |
 | 7b | Menú **Contratos** → filtro "Terminados" y buscar "Rímac" | Tabla paginada con filtros (Kumo `Table` + `Pagination`) | RF-03 / HU-03 |
-| 8 | Abrir http://localhost:5080/scalar/v1 | 14 rutas documentadas en OpenAPI; probar `GET /portfolio/summary` | RNF-01 |
+| 8 | Abrir http://localhost:5080/scalar/v1 | Contrato OpenAPI; probar `GET /portfolio/summary` | RNF-01 |
 
 ## Si algo falla en vivo
 
-- Respaldo: las capturas del recorrido están en el deck (láminas 3 y 10).
+- Respaldo: las capturas del recorrido están en el deck (láminas 3 y 12).
 - La API responde en `GET /health`. Si cae, `dotnet run --project src/Web.Api`.

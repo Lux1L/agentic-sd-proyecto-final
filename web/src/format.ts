@@ -61,3 +61,25 @@ export const defaultPeriod = (periods: string[]) => {
   const past = periods.filter((p) => p < cur)
   return past.length ? past[past.length - 1] : periods[0] ?? cur
 }
+
+const longDateFmt = new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })
+/** "2026-10-31" -> "31 de octubre de 2026" (Date local, sin desfase de zona horaria). */
+export const formatLongDate = (iso: string) => {
+  const d = isoToDate(iso)
+  return d ? longDateFmt.format(d) : '—'
+}
+const dayMonthFmt = new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long' })
+/** "2026-11-05" -> "5 de noviembre". */
+export const formatDayMonth = (iso: string) => {
+  const d = isoToDate(iso)
+  return d ? dayMonthFmt.format(d) : '—'
+}
+/** "2026-10-10" -> 10 */
+export const dayOfMonth = (iso: string) => Number(iso.slice(8, 10))
+
+const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre']
+const monthShortNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic']
+/** "2026-10" -> "octubre" */
+export const monthName = (p: string) => monthNames[Number(p.slice(5, 7)) - 1] ?? p
+/** "2026-09" -> "set" (abreviatura usada en Perú) */
+export const monthShort = (p: string) => monthShortNames[Number(p.slice(5, 7)) - 1] ?? p

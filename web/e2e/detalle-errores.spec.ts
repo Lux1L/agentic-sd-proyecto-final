@@ -6,7 +6,9 @@ test.describe('Detalle con deuda: errores de negocio', () => {
     await page.goto('/')
     await expect(page.getByRole('heading', { name: 'Resumen' })).toBeVisible()
     await page.getByRole('link', { name: /Local comercial A/ }).click()
-    await expect(page.getByText('Días de atraso')).toBeVisible()
+    // El inicio también dice "N días de atraso": esperar la URL y el texto exacto del encabezado del detalle.
+    await expect(page).toHaveURL(/\/leases\//)
+    await expect(page.getByText('Días de atraso', { exact: true })).toBeVisible()
   })
 
   // RN-14 (HU-04 / RF-04)
