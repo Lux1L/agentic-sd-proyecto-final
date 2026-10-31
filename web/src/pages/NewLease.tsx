@@ -60,11 +60,11 @@ export default function NewLease() {
       <LayerCard>
         <LayerCard.Secondary>Arrendatario y condiciones</LayerCard.Secondary>
         <LayerCard.Primary>
-          <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate>
+          <form onSubmit={submit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2" noValidate>
             <div className="sm:col-span-2">
               <Input label="Nombre completo" value={f.tenantFullName} onChange={set('tenantFullName')} {...err('tenantFullName')} />
             </div>
-            <Select label="Tipo de documento" hideLabel={false} value={f.tenantDocumentType}
+            <Select className="w-full" label="Tipo de documento" hideLabel={false} items={{ Dni: 'DNI', Ce: 'CE', Ruc: 'RUC' }} value={f.tenantDocumentType}
               onValueChange={(v) => setF({ ...f, tenantDocumentType: v as string })} error={errors.tenantdocumenttype}>
               <Select.Option value="Dni">DNI</Select.Option>
               <Select.Option value="Ce">CE</Select.Option>

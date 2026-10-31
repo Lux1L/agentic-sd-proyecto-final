@@ -11,6 +11,7 @@ function Stat({ label, value, danger }: { label: string; value: string; danger?:
   return (
     <div className={`rounded-lg px-5 py-4 ring ${danger ? 'ring-kumo-danger bg-kumo-danger/10' : 'ring-kumo-line bg-kumo-base'}`}>
       <div className="text-sm text-kumo-subtle">{label}</div>
+      {/* Excepción consciente a kumo-design content-text-size: KPI para demo (ver docs/ai-evidence) */}
       <div className={`mt-1.5 text-3xl font-semibold ${danger ? 'text-kumo-danger' : 'text-kumo-default'}`}>{value}</div>
     </div>
   )

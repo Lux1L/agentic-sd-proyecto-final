@@ -81,8 +81,8 @@ export default function LeaseDetail() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link to="/" className="flex w-fit items-center gap-1 text-kumo-link no-underline">
-        <ArrowLeftIcon size={16} /> Volver al resumen
+      <Link to="/" className="flex w-fit items-start gap-1.5 text-kumo-link no-underline">
+        <span className="h-lh flex items-center"><ArrowLeftIcon size={14} /></span> Volver al resumen
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">
@@ -153,13 +153,13 @@ export default function LeaseDetail() {
       </LayerCard>
 
       <Dialog.Root open={payOpen} onOpenChange={setPayOpen}>
-        <Dialog size="lg" className="p-8">
+        <Dialog size="lg" className="px-8 py-6">
           <Dialog.Title className="mb-6 text-xl font-semibold">Registrar pago</Dialog.Title>
           <form onSubmit={submitPayment} className="flex flex-col gap-4" noValidate>
             <Input label="Período" type="month" value={pay.period} onChange={(e) => setPay({ ...pay, period: e.target.value })} {...fe('period')} />
             <Input label="Monto (S/)" type="number" min="0" step="0.01" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} {...fe('amount')} />
             <Input label="Fecha de pago" type="date" value={pay.paidOn} onChange={(e) => setPay({ ...pay, paidOn: e.target.value })} {...fe('paidon')} />
-            <Select label="Medio de pago" hideLabel={false} value={pay.method} onValueChange={(v) => setPay({ ...pay, method: v as string })} error={errors.method}>
+            <Select className="w-full" label="Medio de pago" hideLabel={false} items={{ Cash: 'Efectivo', BankTransfer: 'Transferencia', Yape: 'Yape', Plin: 'Plin' }} value={pay.method} onValueChange={(v) => setPay({ ...pay, method: v as string })} error={errors.method}>
               <Select.Option value="Cash">Efectivo</Select.Option>
               <Select.Option value="BankTransfer">Transferencia</Select.Option>
               <Select.Option value="Yape">Yape</Select.Option>
@@ -174,7 +174,7 @@ export default function LeaseDetail() {
       </Dialog.Root>
 
       <Dialog.Root open={endOpen} onOpenChange={setEndOpen} role="alertdialog">
-        <Dialog className="p-8">
+        <Dialog className="px-8 py-6">
           <Dialog.Title className="mb-1.5 text-xl font-semibold">¿Terminar contrato?</Dialog.Title>
           <Dialog.Description className="text-kumo-subtle">
             Se terminará el contrato de {lease.tenantFullName} en {lease.propertyName}. La propiedad quedará disponible. Esta acción no se puede deshacer.

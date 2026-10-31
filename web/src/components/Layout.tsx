@@ -11,7 +11,7 @@ export function Layout() {
       <header className="border-b border-kumo-line bg-kumo-base">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-kumo-default no-underline">
-            <HouseLineIcon size={24} weight="fill" className="text-kumo-brand" />
+            <HouseLineIcon size={20} weight="fill" className="text-kumo-brand" />
             Arriendo Familiar
           </Link>
           <Button
