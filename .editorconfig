@@ -417,3 +417,7 @@ dotnet_diagnostic.S6605.severity = none
 
 # S6781: JWT secret keys should not be disclosed
 dotnet_diagnostic.S6781.severity = none
+
+# Las migraciones de EF Core son código generado: se excluyen del análisis de estilo.
+[src/Web.Api/Database/Migrations/*.cs]
+generated_code = true

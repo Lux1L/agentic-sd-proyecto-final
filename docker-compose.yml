@@ -1,26 +1,27 @@
 services:
   web-api:
     image: ${DOCKER_REGISTRY-}webapi
-    container_name: web-api
+    container_name: arriendo-api
     build:
       context: .
       dockerfile: src/Web.Api/Dockerfile
     ports:
-      - 5000:8080
-      - 5001:8081
+      - 5080:8080
+    profiles: [ "full" ]
+    environment:
+      - ConnectionStrings__Database=Host=postgres;Port=5432;Database=arriendo-familiar;Username=postgres;Password=postgres;Include Error Detail=true
     depends_on:
       - postgres
-      - observability
 
   postgres:
-    image: postgres:17
-    container_name: postgres
+    image: postgres:18.6
+    container_name: arriendo-postgres
     environment:
-      - POSTGRES_DB=clean-architecture
+      - POSTGRES_DB=arriendo-familiar
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./.containers/db:/var/lib/postgresql/data
+      - ./.containers/db:/var/lib/postgresql
     ports:
       - 5432:5432
 
@@ -28,7 +29,8 @@ services:
   # Collector, all bundled in one image. Open Grafana at http://localhost:3000.
   observability:
     image: grafana/otel-lgtm:0.29.1
-    container_name: observability
+    container_name: arriendo-observability
+    profiles: [ "observability", "full" ]
     ports:
       - 3000:3000   # Grafana
       - 4317:4317   # OTLP gRPC

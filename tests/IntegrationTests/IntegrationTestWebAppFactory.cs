@@ -10,8 +10,8 @@ namespace IntegrationTests;
 
 public sealed class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:17")
-        .WithDatabase("clean-architecture")
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18.6")
+        .WithDatabase("arriendo-familiar")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
@@ -22,8 +22,8 @@ public sealed class IntegrationTestWebAppFactory : WebApplicationFactory<Program
 
         // Provide deterministic JWT settings so tokens can be issued and validated in tests.
         builder.UseSetting("Jwt:Secret", "super-duper-secret-value-that-should-be-in-user-secrets");
-        builder.UseSetting("Jwt:Issuer", "clean-architecture");
-        builder.UseSetting("Jwt:Audience", "developers");
+        builder.UseSetting("Jwt:Issuer", "arriendo-familiar");
+        builder.UseSetting("Jwt:Audience", "arriendo-familiar-web");
         builder.UseSetting("Jwt:ExpirationInMinutes", "60");
 
         // Relax rate limiting so the test suite is not throttled.
