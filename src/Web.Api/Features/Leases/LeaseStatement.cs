@@ -37,7 +37,8 @@ public sealed record LeaseStatement(
         {
             decimal paid = paidByPeriod.GetValueOrDefault(period);
             decimal balance = Math.Max(0m, lease.MonthlyRent - paid);
-            DateOnly dueDate = period.DueDate(lease.PaymentDay);
+            // RN-15: el primer período vence como mínimo en la fecha de inicio del contrato.
+            DateOnly dueDate = Max(period.DueDate(lease.PaymentDay), lease.StartDate);
 
             PeriodStatus status;
             int daysOverdue = 0;
@@ -63,6 +64,8 @@ public sealed record LeaseStatement(
 
         return new LeaseStatement(today, lease.MonthlyRent, lines, overdueDebt, outstanding);
     }
+
+    private static DateOnly Max(DateOnly a, DateOnly b) => a >= b ? a : b;
 
     private static Period Min(Period a, Period b) => a <= b ? a : b;
 }

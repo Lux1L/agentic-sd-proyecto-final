@@ -137,4 +137,32 @@ public class LeaseStatementTests
         line.Status.ShouldBe(PeriodStatus.Paid);
         line.Balance.ShouldBe(0m);
     }
+
+    // RN-15
+    [Fact]
+    public void Calculate_Should_DueOnStartDate_When_LeaseStartsAfterPaymentDay_AndTodayIsStartDate()
+    {
+        Lease lease = CreateLease(start: new DateOnly(2026, 10, 30));
+
+        var statement = LeaseStatement.Calculate(lease, [], new DateOnly(2026, 10, 30));
+
+        PeriodLine line = statement.Periods.Single();
+        line.Period.ShouldBe("2026-10");
+        line.DueDate.ShouldBe(new DateOnly(2026, 10, 30));
+        line.Status.ShouldBe(PeriodStatus.Pending);
+    }
+
+    // RN-15
+    [Fact]
+    public void Calculate_Should_MarkOverdueOneDay_When_LeaseStartsAfterPaymentDay_AndTodayIsNextDay()
+    {
+        Lease lease = CreateLease(start: new DateOnly(2026, 10, 30));
+
+        var statement = LeaseStatement.Calculate(lease, [], new DateOnly(2026, 10, 31));
+
+        PeriodLine line = statement.Periods.Single();
+        line.DueDate.ShouldBe(new DateOnly(2026, 10, 30));
+        line.Status.ShouldBe(PeriodStatus.Overdue);
+        line.DaysOverdue.ShouldBe(1);
+    }
 }
