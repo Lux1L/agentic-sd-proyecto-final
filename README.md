@@ -85,6 +85,11 @@ dotnet test ArriendoFamiliar.slnx   # requiere Docker en ejecución (Testcontain
 - [Modelo de datos](specs/technical/01-modelo-de-datos.md) · [Contrato de la API](specs/technical/02-contrato-api.md)
 - [**Matriz de trazabilidad**](specs/technical/03-trazabilidad.md): RF → HU → CU → RN → slice → endpoint → prueba
 
+## Presentación y demo
+
+- Deck: Slides artifact privado (13 láminas, se exporta a .pptx/PDF), compartido por el autor.
+- [Guion de la demo y cómo resetear los datos](docs/guion-demo.md)
+
 ## Evidencia de IA
 
 Se usó **Claude Code**: Opus como orquestador y agentes Sonnet como ejecutores en paralelo, con revisión de cada diff. → [docs/ai-evidence](docs/ai-evidence/README.md)
