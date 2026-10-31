@@ -1,30 +1,30 @@
 ---
 name: add-tests
-description: Backfill missing tests for existing use cases in the Vertical Slice Architecture template — handler unit tests, FluentValidation validator tests, and HTTP integration tests. Use when the user asks to add, improve, or backfill test coverage.
-argument-hint: <use case or feature to cover, e.g. "CreateTodo" or "the Users feature">
+description: Completa los tests faltantes de casos de uso existentes en la plantilla de Vertical Slice Architecture — tests unitarios de handlers, tests de validators de FluentValidation y tests de integración HTTP. Úsala cuando el usuario pida agregar, mejorar o completar la cobertura de tests.
+argument-hint: <caso de uso o feature a cubrir, p. ej. "CreateTodo" o "la feature Users">
 ---
 
-# Add Tests for an Existing Use Case
+# Agregar tests a un caso de uso existente
 
-Backfill the three test types this template expects for every slice. Read the target slice file (`Features/{Entity}/{UseCase}.cs`) first — its nested `Command`/`Query`, `Handler`, `Validator`, and `Endpoint` — then mirror the structure of the closest existing test class.
+Completa los tres tipos de tests que esta plantilla espera para cada slice. Primero lee el archivo del slice objetivo (`Features/{Entity}/{UseCase}.cs`): su `Command`/`Query`, `Handler`, `Validator` y `Endpoint` anidados. Luego replica la estructura de la clase de tests existente más parecida.
 
-## Workflow
+## Flujo de trabajo
 
-1. **Locate the slice.** Open `src/Web.Api/Features/{Entity}/{UseCase}.cs`. List every distinct outcome from the nested `Handler`: each guard clause (`return Result.Failure(...)`) and the happy path.
-2. **Check what already exists** in `tests/Web.Api.UnitTests/{Feature}/` and `tests/IntegrationTests/{Feature}/` — extend existing classes, don't duplicate.
-3. **Write handler unit tests** — one test per failure path plus one happy path asserting persisted state and raised domain events.
-4. **Write validator tests** (commands only) — one failing test per rule plus one fully-valid command.
-5. **Write integration tests** — happy path over real HTTP with state asserted via a follow-up GET; error translation (404/409/400) where the handler has failure paths; 401 without a token if the route family is new.
-6. **Run** `dotnet test` (Docker must be running for the integration tests) and fix failures before finishing.
+1. **Ubica el slice.** Abre `src/Web.Api/Features/{Entity}/{UseCase}.cs`. Lista cada resultado distinto del `Handler` anidado: cada cláusula de guarda (`return Result.Failure(...)`) y el camino feliz.
+2. **Revisa lo que ya existe** en `tests/Web.Api.UnitTests/{Feature}/` y `tests/IntegrationTests/{Feature}/`: extiende las clases existentes, no las dupliques.
+3. **Escribe los tests unitarios del handler**: un test por cada camino de fallo más un camino feliz que verifique el estado persistido y los eventos de dominio emitidos.
+4. **Escribe los tests del validator** (solo para commands): un test que falle por cada regla más un command completamente válido.
+5. **Escribe los tests de integración**: el camino feliz sobre HTTP real, verificando el estado con un GET posterior; la traducción de errores (404/409/400) cuando el handler tenga caminos de fallo; 401 sin token si la familia de rutas es nueva.
+6. **Ejecuta** `dotnet test` (Docker debe estar corriendo para los tests de integración) y corrige los fallos antes de terminar.
 
-## Conventions
+## Convenciones
 
-- **Frameworks:** xUnit + Shouldly + NSubstitute; `FluentValidation.TestHelper` for validators. Global usings already cover `Xunit`, `NSubstitute`, `Shouldly`. Add `using Web.Api.Common;` for `Result`/`Error` and `using Web.Api.Features.{Entity};` for the slice, entity, errors, and domain events.
-- **Reference slice members qualified:** `CreateTodo.Command`, `new CreateTodo.Handler(...)`, `new CreateTodo.Validator()` — they are nested in the `public static class {UseCase}`.
-- **Unit test base:** inherit `BaseHandlerTest`; use `CreateDbContext()` for a fresh in-memory `ApplicationDbContext` (from `Web.Api.Database`) and `CreateCache()` for a real `HybridCache`. There is no `IApplicationDbContext`/`TestDbContext` — the handler takes the concrete `ApplicationDbContext`, so use it directly. Substitute only interfaces (`IUserContext`, `IDateTimeProvider`, `IPasswordHasher`, `ITokenProvider`) — never mock the DbContext.
-- **Integration test base:** inherit `BaseIntegrationTest(factory)` with the `IntegrationTestWebAppFactory` collection fixture; use `RegisterAndLoginAsync()` + `Authenticate(token)` for authenticated calls. Define private response DTO records inside the test class (see `TodosTests.TodoDto`) — integration tests go through HTTP and don't reference the slice types.
-- **Naming:** classes `{UseCase}HandlerTests` / `{Feature}ValidatorsTests` / `{Feature}Tests`; methods `Handle_Should_{Outcome}_When{Condition}` (unit) or `{Action}_Should_{Outcome}[_When{Condition}]` (integration).
-- **Structure:** `// Arrange` / `// Act` / `// Assert` comments in every test.
-- **Assertions:** compare exact errors (`result.Error.ShouldBe(TodoItemErrors.NotFound(id))`); assert persisted state by re-reading from the context (unit) or via a GET request (integration); assert domain events with `entity.DomainEvents.ShouldContain(e => e is XDomainEvent)`.
+- **Frameworks:** xUnit + Shouldly + NSubstitute; `FluentValidation.TestHelper` para los validators. Los global usings ya cubren `Xunit`, `NSubstitute`, `Shouldly`. Agrega `using Web.Api.Common;` para `Result`/`Error` y `using Web.Api.Features.{Entity};` para el slice, la entidad, los errores y los eventos de dominio.
+- **Referencia los miembros del slice de forma calificada:** `CreateTodo.Command`, `new CreateTodo.Handler(...)`, `new CreateTodo.Validator()`; están anidados en la `public static class {UseCase}`.
+- **Base de tests unitarios:** hereda de `BaseHandlerTest`; usa `CreateDbContext()` para obtener un `ApplicationDbContext` (de `Web.Api.Database`) nuevo en memoria y `CreateCache()` para un `HybridCache` real. No existe `IApplicationDbContext`/`TestDbContext`: el handler recibe el `ApplicationDbContext` concreto, así que úsalo directamente. Sustituye solo interfaces (`IUserContext`, `IDateTimeProvider`, `IPasswordHasher`, `ITokenProvider`); nunca hagas mock del DbContext.
+- **Base de tests de integración:** hereda de `BaseIntegrationTest(factory)` con el collection fixture `IntegrationTestWebAppFactory`; usa `RegisterAndLoginAsync()` + `Authenticate(token)` para las llamadas autenticadas. Define records privados de DTO de respuesta dentro de la clase de test (ver `TodosTests.TodoDto`); los tests de integración pasan por HTTP y no referencian los tipos del slice.
+- **Nombres:** clases `{UseCase}HandlerTests` / `{Feature}ValidatorsTests` / `{Feature}Tests`; métodos `Handle_Should_{Outcome}_When{Condition}` (unitarios) o `{Action}_Should_{Outcome}[_When{Condition}]` (integración).
+- **Estructura:** comentarios `// Arrange` / `// Act` / `// Assert` en cada test.
+- **Aserciones:** compara errores exactos (`result.Error.ShouldBe(TodoItemErrors.NotFound(id))`); verifica el estado persistido volviendo a leer desde el contexto (unitarios) o mediante una petición GET (integración); verifica los eventos de dominio con `entity.DomainEvents.ShouldContain(e => e is XDomainEvent)`.
 
-Full annotated templates: [../add-feature/references/tests.md](../add-feature/references/tests.md) (if the `add-feature` skill is installed) or mirror `CreateTodoCommandHandlerTests`, `TodoValidatorsTests`, and `TodosTests` in this repo.
+Plantillas completas comentadas: [../add-feature/references/tests.md](../add-feature/references/tests.md) (si la skill `add-feature` está instalada), o replica `CreateTodoCommandHandlerTests`, `TodoValidatorsTests` y `TodosTests` de este repo.

@@ -1,50 +1,50 @@
 ---
 name: vsa-review
-description: Review pending changes against the Vertical Slice Architecture template's conventions — one-file slices, slice isolation, Result-based error handling, direct DbContext access, validation, endpoints, and test coverage. Use when the user asks to review changes, check conventions, or audit a feature before committing.
-argument-hint: [optional: specific files or feature to review; defaults to the working-tree diff]
+description: Revisa los cambios pendientes contra las convenciones de la plantilla de Vertical Slice Architecture — slices de un solo archivo, aislamiento entre slices, manejo de errores basado en Result, acceso directo al DbContext, validación, endpoints y cobertura de tests. Úsala cuando el usuario pida revisar cambios, verificar convenciones o auditar una feature antes de hacer commit.
+argument-hint: "[opcional: archivos o feature específicos a revisar; por defecto, el diff del working tree]"
 ---
 
-# Vertical Slice Architecture Convention Review
+# Revisión de convenciones de Vertical Slice Architecture
 
-Review the given scope (default: `git diff` + untracked files) against this template's conventions. Report findings with file:line references, ordered by severity. Do not fix anything unless asked.
+Revisa el alcance indicado (por defecto: `git diff` + archivos sin seguimiento) contra las convenciones de esta plantilla. Reporta los hallazgos con referencias archivo:línea, ordenados por severidad. No corrijas nada a menos que te lo pidan.
 
 ## Checklist
 
-### Slice structure (violations are blockers)
-- One use case = one file: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`, containing a `public static class {UseCase}`.
-- The slice is fully nested: `Command`/`Query`, `Validator` (commands only), `Handler`, and `Endpoint` are all nested inside that static class. No separate Application/Domain/Infrastructure project, no separate `Endpoints/` folder.
-- `Handler` is `internal sealed` with a primary constructor, implementing the custom `ICommandHandler<>` / `IQueryHandler<>` (from `Web.Api.Common.Messaging`) — no MediatR.
-- Response DTOs are the slice's nested `Response`; queries project with `.Select(...)` and never return domain entities.
+### Estructura del slice (las violaciones son bloqueantes)
+- Un caso de uso = un archivo: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`, que contiene una `public static class {UseCase}`.
+- El slice está completamente anidado: `Command`/`Query`, `Validator` (solo commands), `Handler` y `Endpoint` están todos anidados dentro de esa clase estática. Sin proyecto Application/Domain/Infrastructure aparte, sin carpeta `Endpoints/` aparte.
+- `Handler` es `internal sealed` con constructor primario e implementa el `ICommandHandler<>` / `IQueryHandler<>` propio (de `Web.Api.Common.Messaging`); sin MediatR.
+- Los DTO de respuesta son el `Response` anidado del slice; las queries proyectan con `.Select(...)` y nunca devuelven entidades de dominio.
 
-### Slice isolation (blockers)
-- **No cross-feature slice references.** A feature may reference the shared `Common`/`Database`/`Authentication`/`Authorization` code and another feature's **domain types** (entity, `{Entity}Errors`, domain events). It must **never** reference another feature's `Command`/`Query`/`Handler`/`Validator`/`Endpoint`.
-- No manual DI registration for handlers/validators/endpoints — they are discovered by Scrutor scanning, `AddValidatorsFromAssembly(includeInternalTypes: true)`, and `AddEndpoints`. Flag anything wiring a slice up by hand.
+### Aislamiento entre slices (bloqueantes)
+- **Sin referencias entre slices de distintas features.** Una feature puede referenciar el código compartido de `Common`/`Database`/`Authentication`/`Authorization` y los **tipos de dominio** de otra feature (entidad, `{Entity}Errors`, eventos de dominio). **Nunca** debe referenciar el `Command`/`Query`/`Handler`/`Validator`/`Endpoint` de otra feature.
+- Sin registro manual en DI de handlers/validators/endpoints: se descubren mediante el escaneo de Scrutor, `AddValidatorsFromAssembly(includeInternalTypes: true)` y `AddEndpoints`. Señala cualquier cosa que registre un slice a mano.
 
-### Data access
-- Handlers inject the concrete `ApplicationDbContext` (from `Web.Api.Database`) directly. There is **no `IApplicationDbContext`** — flag any reference to it.
-- Persistence details (keys, conversions, relationships) live in `IEntityTypeConfiguration<>` classes under `Database/Configurations/`, not on entities. Entities are plain domain types in `Features/{Entity}/`.
+### Acceso a datos
+- Los handlers inyectan directamente el `ApplicationDbContext` concreto (de `Web.Api.Database`). **No existe `IApplicationDbContext`**: señala cualquier referencia a él.
+- Los detalles de persistencia (claves, conversiones, relaciones) viven en clases `IEntityTypeConfiguration<>` dentro de `Database/Configurations/`, no en las entidades. Las entidades son tipos de dominio simples en `Features/{Entity}/`.
 
-### Error handling
-- Expected failures return `Result` / `Result<T>` (from `Web.Api.Common`) — no exceptions for control flow, no try/catch around business rules.
-- Errors come from static `{Entity}Errors` factories with `"{Feature}.{Reason}"` codes and the semantically correct type (`NotFound` / `Conflict` / `Problem` / `Failure`).
-- Endpoints translate failures only via `result.Match(Results.Ok|NoContent, CustomResults.Problem)`.
+### Manejo de errores
+- Los fallos esperados devuelven `Result` / `Result<T>` (de `Web.Api.Common`); sin excepciones para controlar el flujo, sin try/catch alrededor de reglas de negocio.
+- Los errores provienen de factories estáticas `{Entity}Errors` con códigos `"{Feature}.{Reason}"` y el tipo semánticamente correcto (`NotFound` / `Conflict` / `Problem` / `Failure`).
+- Los endpoints traducen los fallos únicamente mediante `result.Match(Results.Ok|NoContent, CustomResults.Problem)`.
 
-### Validation & security
-- Every command has a nested FluentValidation `Validator`; handlers don't re-check input shape (but do enforce business rules). Queries have no validator.
-- Handlers acting on user-owned data enforce ownership: filter by `IUserContext.UserId` or return `UserErrors.Unauthorized()`.
-- Endpoints implement `IEndpoint`, call `.RequireAuthorization()` (or `.HasPermission(...)`) and `.WithTags(Tags.X)`, and contain only request→command mapping plus result matching — no business logic.
-- No `DateTime.UtcNow` / `DateTime.Now` in handlers — use `IDateTimeProvider`.
+### Validación y seguridad
+- Cada command tiene un `Validator` de FluentValidation anidado; los handlers no vuelven a verificar la forma de la entrada (pero sí aplican las reglas de negocio). Las queries no tienen validator.
+- Los handlers que actúan sobre datos propiedad del usuario verifican la propiedad: filtran por `IUserContext.UserId` o devuelven `UserErrors.Unauthorized()`.
+- Los endpoints implementan `IEndpoint`, llaman a `.RequireAuthorization()` (o `.HasPermission(...)`) y `.WithTags(Tags.X)`, y solo contienen el mapeo request→command más el match del resultado; sin lógica de negocio.
+- Sin `DateTime.UtcNow` / `DateTime.Now` en los handlers: usa `IDateTimeProvider`.
 
-### State changes & caching
-- Commands that mutate state raise a domain event via `entity.Raise(new XDomainEvent(id))` before `SaveChangesAsync`.
-- Any `HybridCache`-cached read has matching invalidation (`cache.RemoveAsync`) in every command that mutates that data; keys come from the `{Feature}CacheKeys` class.
+### Cambios de estado y cache
+- Los commands que modifican el estado emiten un evento de dominio mediante `entity.Raise(new XDomainEvent(id))` antes de `SaveChangesAsync`.
+- Toda lectura cacheada con `HybridCache` tiene su invalidación correspondiente (`cache.RemoveAsync`) en cada command que modifica esos datos; las claves provienen de la clase `{Feature}CacheKeys`.
 
 ### Tests
-- New/changed handlers have unit tests covering every `Result.Failure` path plus the happy path (persisted state + domain events), using the nested types (`new {UseCase}.Handler(...)`).
-- New/changed validators have `TestValidate` tests per rule.
-- New/changed endpoints have integration tests over real HTTP.
-- Test naming and Arrange/Act/Assert structure match existing tests.
+- Los handlers nuevos o modificados tienen tests unitarios que cubren cada camino `Result.Failure` más el camino feliz (estado persistido + eventos de dominio), usando los tipos anidados (`new {UseCase}.Handler(...)`).
+- Los validators nuevos o modificados tienen tests con `TestValidate` por cada regla.
+- Los endpoints nuevos o modificados tienen tests de integración sobre HTTP real.
+- Los nombres de los tests y la estructura Arrange/Act/Assert coinciden con los tests existentes.
 
-## Output format
+## Formato de salida
 
-Group findings as **Blockers** (cross-feature slice references, `IApplicationDbContext` usage, missing auth, thrown exceptions for expected failures), **Convention violations** (file/nesting structure, naming, error codes, missing events/invalidation), and **Test gaps**. For each: `file:line`, what's wrong, and the one-line fix. Close with a verdict: ready to commit, or what must change first. If everything passes, say so and run `dotnet build` + `dotnet test` to confirm.
+Agrupa los hallazgos en **Bloqueantes** (referencias entre slices de distintas features, uso de `IApplicationDbContext`, falta de auth, excepciones lanzadas para fallos esperados), **Violaciones de convención** (estructura de archivos/anidamiento, nombres, códigos de error, eventos/invalidaciones faltantes) y **Brechas de tests**. Para cada uno: `file:line`, qué está mal y la corrección en una línea. Cierra con un veredicto: listo para commit, o qué debe cambiar primero. Si todo pasa, dilo y ejecuta `dotnet build` + `dotnet test` para confirmarlo.

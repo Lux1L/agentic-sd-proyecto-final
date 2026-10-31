@@ -1,16 +1,16 @@
 ---
 name: add-background-job
-description: Add a background job (a hosted BackgroundService) to the Vertical Slice Architecture template that runs on a schedule and safely resolves scoped services. Use when the user wants a recurring task, worker, cleanup job, or scheduled processing.
-argument-hint: <what the job does, e.g. "delete expired refresh tokens every hour">
+description: Agrega un background job (un BackgroundService hospedado) a la plantilla de Vertical Slice Architecture que se ejecuta de forma programada y resuelve servicios scoped de manera segura. Úsala cuando el usuario quiera una tarea recurrente, un worker, un job de limpieza o un procesamiento programado.
+argument-hint: <qué hace el job, p. ej. "eliminar los refresh tokens expirados cada hora">
 ---
 
-# Add a Background Job
+# Agregar un background job
 
-Recurring work runs as a `BackgroundService` in `src/Web.Api/BackgroundJobs/`. A hosted service is a **singleton**, so scoped services (`ApplicationDbContext`, handlers) must be resolved inside a scope created per iteration.
+El trabajo recurrente se ejecuta como un `BackgroundService` en `src/Web.Api/BackgroundJobs/`. Un hosted service es un **singleton**, así que los servicios scoped (`ApplicationDbContext`, handlers) deben resolverse dentro de un scope creado en cada iteración.
 
-## Files to create/modify
+## Archivos a crear/modificar
 
-1. **The job** — `src/Web.Api/BackgroundJobs/{Name}BackgroundService.cs`
+1. **El job**: `src/Web.Api/BackgroundJobs/{Name}BackgroundService.cs`
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
@@ -48,16 +48,16 @@ internal sealed class ExpiredRefreshTokensCleanupService(
 }
 ```
 
-2. **Registration** — in `src/Web.Api/DependencyInjection.cs` (e.g. inside `AddServices`, or a small `AddBackgroundJobs` helper wired into `AddInfrastructure`):
+2. **Registro**: en `src/Web.Api/DependencyInjection.cs` (p. ej. dentro de `AddServices`, o en un pequeño helper `AddBackgroundJobs` conectado a `AddInfrastructure`):
 
 ```csharp
 services.AddHostedService<ExpiredRefreshTokensCleanupService>();
 ```
 
-## Rules
+## Reglas
 
-- A hosted service is a singleton — **never** inject `ApplicationDbContext`, handlers, or other scoped/transient services directly. Resolve them from a per-iteration scope via `IServiceScopeFactory`. There is **no `IApplicationDbContext`** — resolve the concrete `ApplicationDbContext` (from `Web.Api.Database`).
-- Wrap each iteration body in try/catch so one failure doesn't stop the loop; log with `ILogger`.
-- Use `PeriodicTimer` for the schedule and always honor `stoppingToken`.
-- If the work is really a use case, prefer resolving and invoking an existing command/handler (`ICommandHandler<...>` from `Web.Api.Common.Messaging`) inside the scope instead of duplicating logic.
-- Build + run the tests when done.
+- Un hosted service es un singleton: **nunca** inyectes `ApplicationDbContext`, handlers u otros servicios scoped/transient directamente. Resuélvelos desde un scope por iteración mediante `IServiceScopeFactory`. **No existe `IApplicationDbContext`**: resuelve el `ApplicationDbContext` concreto (de `Web.Api.Database`).
+- Envuelve el cuerpo de cada iteración en try/catch para que un fallo no detenga el bucle; registra con `ILogger`.
+- Usa `PeriodicTimer` para la programación y respeta siempre el `stoppingToken`.
+- Si el trabajo es en realidad un caso de uso, es preferible resolver e invocar un command/handler existente (`ICommandHandler<...>` de `Web.Api.Common.Messaging`) dentro del scope en lugar de duplicar la lógica.
+- Compila y ejecuta los tests al terminar.

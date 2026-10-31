@@ -1,26 +1,26 @@
-# Vertical Slice Architecture Agent Skills for Claude Code
+# Skills de agente de Vertical Slice Architecture para Claude Code
 
-A skill pack that teaches Claude Code the conventions of the Vertical Slice Architecture template — so every feature it builds looks like you wrote it: one file per use case, custom command/query handlers (no MediatR), Result-based error handling, direct `ApplicationDbContext` access, minimal API endpoints, and full test coverage.
+Un paquete de skills que le enseña a Claude Code las convenciones de la plantilla de Vertical Slice Architecture, para que cada feature que construya se vea como si la hubieras escrito tú: un archivo por caso de uso, handlers propios de command/query (sin MediatR), manejo de errores basado en `Result`, acceso directo a `ApplicationDbContext`, endpoints con minimal API y cobertura completa de tests.
 
-## What's inside
+## Qué incluye
 
-| Skill | Invoke with | What it does |
+| Skill | Cómo invocarla | Qué hace |
 |---|---|---|
-| **add-feature** | `/add-feature archive a todo item` | Scaffolds a complete vertical slice in one file: nested command/query, handler, validator, endpoint, plus unit + validator + integration tests. |
-| **add-entity** | `/add-entity Project with a name and owner` | Adds a domain entity end to end: entity, error catalog, domain events, EF configuration, DbContext wiring, migration. |
-| **add-tests** | `/add-tests CreateTodo` | Backfills handler, validator, and integration tests for existing use cases. |
-| **add-migration** | `/add-migration Add_Projects` | Creates and applies an EF Core migration (single project — `src/Web.Api` is both migrations and startup project). |
-| **add-background-job** | `/add-background-job delete expired refresh tokens hourly` | Adds a scheduled `BackgroundService` that safely resolves scoped services per run. |
-| **bootstrap** | `/bootstrap Acme.Billing` | Renames the solution to your app and strips the sample Todos feature (keeps Users + auth). |
-| **vsa-review** | `/vsa-review` | Reviews pending changes against the template's conventions: one-file slices, slice isolation, error handling, security, caching, and test coverage. |
+| **add-feature** | `/add-feature archive a todo item` | Genera un vertical slice completo en un solo archivo: command/query anidado, handler, validator, endpoint, más tests unitarios, de validator y de integración. |
+| **add-entity** | `/add-entity Project with a name and owner` | Agrega una entidad de dominio de punta a punta: entidad, catálogo de errores, eventos de dominio, configuración de EF, registro en el DbContext y migración. |
+| **add-tests** | `/add-tests CreateTodo` | Completa los tests de handler, de validator y de integración que falten en casos de uso existentes. |
+| **add-migration** | `/add-migration Add_Projects` | Crea y aplica una migración de EF Core (proyecto único: `src/Web.Api` es a la vez el proyecto de migraciones y el de inicio). |
+| **add-background-job** | `/add-background-job delete expired refresh tokens hourly` | Agrega un `BackgroundService` programado que resuelve los servicios scoped de forma segura en cada ejecución. |
+| **bootstrap** | `/bootstrap Acme.Billing` | Renombra la solución con el nombre de tu app y elimina la feature de ejemplo Todos (conserva Users + auth). |
+| **vsa-review** | `/vsa-review` | Revisa los cambios pendientes contra las convenciones de la plantilla: slices de un solo archivo, aislamiento entre slices, manejo de errores, seguridad, cache y cobertura de tests. |
 
-You don't have to invoke them explicitly — once installed, Claude Code picks the right skill automatically when you say things like "add an endpoint to snooze a todo."
+No es necesario invocarlas explícitamente: una vez instaladas, Claude Code elige la skill correcta automáticamente cuando dices algo como "agrega un endpoint para posponer un todo".
 
-## Installation
+## Instalación
 
-The skills live in `.claude/skills/`. If you cloned the template, they're already active — just open the repo in Claude Code.
+Las skills están en `.claude/skills/`. Si clonaste la plantilla, ya están activas: solo abre el repo en Claude Code.
 
-To use them in another project based on this template, copy the folder:
+Para usarlas en otro proyecto basado en esta plantilla, copia la carpeta:
 
 ```
 your-project/
@@ -35,16 +35,16 @@ your-project/
         └── vsa-review/
 ```
 
-Works with both the standard and the Aspire variants of the template.
+Funciona tanto con la variante estándar como con la variante Aspire de la plantilla.
 
-## Try it
+## Pruébalo
 
 ```
 /add-feature snooze a todo until a given date
 ```
 
-Claude will create the one-file slice — the command, validator, handler (with ownership check, domain event, and cache invalidation), and the endpoint — plus the three test types, then build and run the tests.
+Claude creará el slice de un solo archivo (el command, el validator, el handler con verificación de propiedad, evento de dominio e invalidación de cache, y el endpoint) junto con los tres tipos de tests, y luego compilará y ejecutará los tests.
 
-## Customizing
+## Personalización
 
-Each skill is a plain Markdown file (`SKILL.md`, plus templates under `references/`). Prefer a different folder layout, records everywhere, a different test stack? Edit the templates once and every future feature follows suit. The skills are the executable version of your team's conventions doc.
+Cada skill es un archivo Markdown simple (`SKILL.md`, más plantillas en `references/`). ¿Prefieres otra estructura de carpetas, records en todas partes u otro stack de testing? Edita las plantillas una vez y todas las features futuras seguirán ese cambio. Las skills son la versión ejecutable del documento de convenciones de tu equipo.

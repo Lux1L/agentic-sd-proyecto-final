@@ -1,60 +1,60 @@
 ---
 name: add-feature
-description: Scaffold a complete Vertical Slice Architecture feature — one file with a nested command or query, custom handler, FluentValidation validator, minimal API endpoint, and tests (unit, validator, integration). Use when the user asks to add a feature, use case, command, query, or endpoint to this Vertical Slice Architecture template.
-argument-hint: <feature description, e.g. "archive a todo item" or "get todos due this week">
+description: Genera una feature completa de Vertical Slice Architecture — un archivo con un command o query anidado, handler propio, validator de FluentValidation, endpoint de minimal API y tests (unitarios, de validator y de integración). Úsala cuando el usuario pida agregar una feature, caso de uso, command, query o endpoint a esta plantilla de Vertical Slice Architecture.
+argument-hint: <descripción de la feature, p. ej. "archivar un todo" u "obtener los todos que vencen esta semana">
 ---
 
-# Add a Feature (Vertical Slice)
+# Agregar una feature (vertical slice)
 
-Scaffold a full use case following this template's conventions: a single self-contained file under `Features/{Entity}/` that holds the command/query, its custom handler, its validator, and its minimal-API endpoint. No MediatR — this codebase uses its own `ICommand`/`IQuery` abstractions (`Web.Api.Common.Messaging`) with Scrutor-registered handlers and decorators.
+Genera un caso de uso completo siguiendo las convenciones de esta plantilla: un único archivo autocontenido bajo `Features/{Entity}/` que contiene el command/query, su handler propio, su validator y su endpoint de minimal API. Sin MediatR: este código usa sus propias abstracciones `ICommand`/`IQuery` (`Web.Api.Common.Messaging`) con handlers y decorators registrados por Scrutor.
 
-## The one-file rule
+## La regla de un solo archivo
 
-A use case is **one file**: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`. That file is a `public static class {UseCase}` whose nested members are the whole slice:
+Un caso de uso es **un archivo**: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`. Ese archivo es una `public static class {UseCase}` cuyos miembros anidados conforman todo el slice:
 
 ```csharp
 public static class ArchiveTodo
 {
-    public sealed record Command(...) : ICommand;              // or Query : IQuery<T>
-    public sealed class Validator : AbstractValidator<Command> { ... }  // commands only
+    public sealed record Command(...) : ICommand;              // o Query : IQuery<T>
+    public sealed class Validator : AbstractValidator<Command> { ... }  // solo commands
     internal sealed class Handler(...) : ICommandHandler<Command> { ... }
     public sealed class Endpoint : IEndpoint { ... }
 }
 ```
 
-Everything for the slice lives here — there is no separate Application/Domain/Infrastructure project and no separate `Endpoints/` folder. Cross-cutting code lives in `Common/`, `Database/`, `Authentication/`, `Authorization/`; each feature lives in `Features/{Entity}/`.
+Todo lo del slice vive aquí: no hay proyecto Application/Domain/Infrastructure aparte ni carpeta `Endpoints/` aparte. El código transversal vive en `Common/`, `Database/`, `Authentication/`, `Authorization/`; cada feature vive en `Features/{Entity}/`.
 
-## Workflow
+## Flujo de trabajo
 
-1. **Classify the use case.** A state change is a **command**; a read is a **query**. Name the slice with the use-case verb + entity, e.g. `ArchiveTodo`, `GetOverdueTodos` — that name is the file, the folder-mate, and the static class.
-2. **Check the feature's domain types.** If the entity, its `{Entity}Errors` class, or a needed domain event doesn't exist in `Features/{Entity}/`, add it first (see the `add-entity` skill). Commands that change state should raise a domain event via `entity.Raise(...)`.
-3. **Create the slice file** at `src/Web.Api/Features/{Entity}/{UseCase}.cs` with the nested `Command`/`Query`, `Validator` (commands only), `Handler`, and `Endpoint`. Templates: [references/command-slice.md](references/command-slice.md), [references/query-slice.md](references/query-slice.md), and [references/endpoint.md](references/endpoint.md).
-4. **Write tests** — handler unit tests, validator tests, and an integration test. Templates: [references/tests.md](references/tests.md).
-5. **Verify:** `dotnet build` then `dotnet test`. Everything must pass.
+1. **Clasifica el caso de uso.** Un cambio de estado es un **command**; una lectura es una **query**. Nombra el slice con el verbo del caso de uso + la entidad, p. ej. `ArchiveTodo`, `GetOverdueTodos`; ese nombre es el del archivo, el del vecino en la carpeta y el de la clase estática.
+2. **Revisa los tipos de dominio de la feature.** Si la entidad, su clase `{Entity}Errors` o un evento de dominio necesario no existen en `Features/{Entity}/`, agrégalos primero (ver la skill `add-entity`). Los commands que cambian el estado deben emitir un evento de dominio mediante `entity.Raise(...)`.
+3. **Crea el archivo del slice** en `src/Web.Api/Features/{Entity}/{UseCase}.cs` con el `Command`/`Query`, `Validator` (solo commands), `Handler` y `Endpoint` anidados. Plantillas: [references/command-slice.md](references/command-slice.md), [references/query-slice.md](references/query-slice.md) y [references/endpoint.md](references/endpoint.md).
+4. **Escribe los tests**: tests unitarios del handler, tests del validator y un test de integración. Plantillas: [references/tests.md](references/tests.md).
+5. **Verifica:** `dotnet build` y luego `dotnet test`. Todo debe pasar.
 
-## Non-negotiable conventions
+## Convenciones no negociables
 
-- **File = use case.** One file per use case under `src/Web.Api/Features/{Entity}/` (e.g. `Features/Todos/ArchiveTodo.cs`), containing the whole slice as nested types of `public static class {UseCase}`.
-- **Handlers are `internal sealed`** with primary constructors, nested as `Handler`, implementing `ICommandHandler<Command>`, `ICommandHandler<Command, TResponse>`, or `IQueryHandler<Query, TResponse>` (from `Web.Api.Common.Messaging`).
-- **No manual DI registration.** Handlers, validators, and endpoints are discovered by assembly scanning — Scrutor (`AssignableTo(ICommandHandler<,>)`), `AddValidatorsFromAssembly(includeInternalTypes: true)`, and `AddEndpoints`. Nested types are in `assembly.DefinedTypes`, so they are found automatically. Never wire up a new slice by hand.
-- **Return `Result` / `Result<T>`, never throw** for expected failures. Errors come from static factory methods on `{Entity}Errors` (in the feature folder) with codes like `"Todos.NotFound"`. `Result`, `Error`, `ErrorType` live in `Web.Api.Common`.
-- **Validation lives in the nested `Validator`** (FluentValidation). It runs automatically via `ValidationDecorator` — the handler never validates input shape itself. Queries have no validators (the decorator only wraps commands).
-- **Data access via `ApplicationDbContext` directly** (from `Web.Api.Database`). There is **no `IApplicationDbContext`** — inject the concrete `ApplicationDbContext` into the handler.
-- **Authorization check** in handlers that act on user-owned data: compare `IUserContext.UserId` (from `Web.Api.Authentication`) and return `UserErrors.Unauthorized()` on mismatch, or filter queries by `userContext.UserId`.
-- **Queries project directly to a nested `Response` DTO** with `.Select(...)` — never return domain entities. Cache hot reads with `HybridCache` using a `{Feature}CacheKeys` static class; invalidate in the commands that mutate the cached data.
-- **The nested `Endpoint`** implements `IEndpoint`, resolves the handler interface directly from DI, uses `result.Match(Results.Ok, CustomResults.Problem)` (or `Results.NoContent` for void commands), tags with the `Tags` class, and calls `.RequireAuthorization()`.
-- **No cross-feature coupling.** A slice may reference another feature's **domain types** (e.g. `Todos` uses `User`/`UserErrors` via `using Web.Api.Features.Users;`) and the shared `Common`/`Database`/`Authentication`/`Authorization` code. It must **never** reference another feature's `Command`/`Query`/`Handler`/`Validator`/`Endpoint`.
+- **Archivo = caso de uso.** Un archivo por caso de uso bajo `src/Web.Api/Features/{Entity}/` (p. ej. `Features/Todos/ArchiveTodo.cs`), que contiene todo el slice como tipos anidados de `public static class {UseCase}`.
+- **Los handlers son `internal sealed`** con constructores primarios, anidados como `Handler`, e implementan `ICommandHandler<Command>`, `ICommandHandler<Command, TResponse>` o `IQueryHandler<Query, TResponse>` (de `Web.Api.Common.Messaging`).
+- **Sin registro manual en DI.** Los handlers, validators y endpoints se descubren por escaneo del assembly: Scrutor (`AssignableTo(ICommandHandler<,>)`), `AddValidatorsFromAssembly(includeInternalTypes: true)` y `AddEndpoints`. Los tipos anidados están en `assembly.DefinedTypes`, así que se encuentran automáticamente. Nunca registres un slice nuevo a mano.
+- **Devuelve `Result` / `Result<T>`, nunca lances excepciones** para fallos esperados. Los errores provienen de métodos factory estáticos en `{Entity}Errors` (en la carpeta de la feature) con códigos como `"Todos.NotFound"`. `Result`, `Error`, `ErrorType` viven en `Web.Api.Common`.
+- **La validación vive en el `Validator` anidado** (FluentValidation). Se ejecuta automáticamente mediante `ValidationDecorator`; el handler nunca valida la forma de la entrada por sí mismo. Las queries no tienen validators (el decorator solo envuelve commands).
+- **Acceso a datos directamente mediante `ApplicationDbContext`** (de `Web.Api.Database`). **No existe `IApplicationDbContext`**: inyecta el `ApplicationDbContext` concreto en el handler.
+- **Verificación de autorización** en los handlers que actúan sobre datos propiedad del usuario: compara `IUserContext.UserId` (de `Web.Api.Authentication`) y devuelve `UserErrors.Unauthorized()` si no coincide, o filtra las queries por `userContext.UserId`.
+- **Las queries proyectan directamente a un DTO `Response` anidado** con `.Select(...)`; nunca devuelven entidades de dominio. Cachea las lecturas frecuentes con `HybridCache` usando una clase estática `{Feature}CacheKeys`; invalida en los commands que modifican los datos cacheados.
+- **El `Endpoint` anidado** implementa `IEndpoint`, resuelve la interfaz del handler directamente desde la DI, usa `result.Match(Results.Ok, CustomResults.Problem)` (o `Results.NoContent` para commands sin retorno), se etiqueta con la clase `Tags` y llama a `.RequireAuthorization()`.
+- **Sin acoplamiento entre features.** Un slice puede referenciar los **tipos de dominio** de otra feature (p. ej. `Todos` usa `User`/`UserErrors` mediante `using Web.Api.Features.Users;`) y el código compartido de `Common`/`Database`/`Authentication`/`Authorization`. **Nunca** debe referenciar el `Command`/`Query`/`Handler`/`Validator`/`Endpoint` de otra feature.
 
-## Naming reference
+## Referencia de nombres
 
-| Artifact | Pattern | Example |
+| Artefacto | Patrón | Ejemplo |
 |---|---|---|
-| Slice file & class | `{Verb}{Entity}` / `Get{X}` | `Features/Todos/ArchiveTodo.cs` → `public static class ArchiveTodo` |
-| Command | nested `Command` | `ArchiveTodo.Command` |
-| Query | nested `Query` | `GetOverdueTodos.Query` |
-| Handler | nested `internal sealed Handler` | `ArchiveTodo.Handler` |
-| Validator | nested `Validator` | `ArchiveTodo.Validator` |
-| Response | nested `Response` | `GetOverdueTodos.Response` |
-| Endpoint | nested `Endpoint : IEndpoint` | `ArchiveTodo.Endpoint` |
-| Unit test | `{UseCase}HandlerTests` | `ArchiveTodoHandlerTests` |
-| Test method | `Handle_Should_{Outcome}_When{Condition}` | `Handle_Should_ReturnNotFound_WhenTodoDoesNotExist` |
+| Archivo y clase del slice | `{Verb}{Entity}` / `Get{X}` | `Features/Todos/ArchiveTodo.cs` → `public static class ArchiveTodo` |
+| Command | `Command` anidado | `ArchiveTodo.Command` |
+| Query | `Query` anidado | `GetOverdueTodos.Query` |
+| Handler | `internal sealed Handler` anidado | `ArchiveTodo.Handler` |
+| Validator | `Validator` anidado | `ArchiveTodo.Validator` |
+| Response | `Response` anidado | `GetOverdueTodos.Response` |
+| Endpoint | `Endpoint : IEndpoint` anidado | `ArchiveTodo.Endpoint` |
+| Test unitario | `{UseCase}HandlerTests` | `ArchiveTodoHandlerTests` |
+| Método de test | `Handle_Should_{Outcome}_When{Condition}` | `Handle_Should_ReturnNotFound_WhenTodoDoesNotExist` |

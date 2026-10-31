@@ -1,33 +1,33 @@
 ---
 name: bootstrap
-description: Turn this template into a fresh project — rename the solution and (optionally) the root namespace to the user's app name, and remove the sample Todos feature so they start clean. Use right after cloning when the user wants to begin their own project from the template.
-argument-hint: <new project/solution name, e.g. "Acme.Billing">
+description: Convierte esta plantilla en un proyecto nuevo — renombra la solución y (opcionalmente) el namespace raíz con el nombre de la app del usuario, y elimina la feature de ejemplo Todos para empezar desde cero. Úsala justo después de clonar, cuando el usuario quiera iniciar su propio proyecto a partir de la plantilla.
+argument-hint: <nombre del nuevo proyecto/solución, p. ej. "Acme.Billing">
 ---
 
-# Bootstrap a New Project from the Template
+# Crear un proyecto nuevo a partir de la plantilla
 
-Two jobs: **(1)** rename the template to the user's name, and **(2)** strip the sample **Todos** feature (keep Users + auth — most apps need them). Confirm the new name with the user first.
+Dos tareas: **(1)** renombrar la plantilla con el nombre del usuario y **(2)** eliminar la feature de ejemplo **Todos** (conservar Users + auth, ya que la mayoría de apps los necesitan). Confirma primero el nuevo nombre con el usuario.
 
-## 1. Rename
+## 1. Renombrar
 
-The template ships as the `VerticalSlice` solution with a single `Web.Api` project (root namespace `Web.Api`) — there are no Domain/Application/Infrastructure/SharedKernel projects.
+La plantilla viene como la solución `VerticalSlice` con un único proyecto `Web.Api` (namespace raíz `Web.Api`); no hay proyectos Domain/Application/Infrastructure/SharedKernel.
 
-- Rename `VerticalSlice.slnx` → `{Name}.slnx`.
-- If the user wants their own root namespace (e.g. `Acme.Billing` instead of `Web.Api`), rename the `Web.Api` namespace across `src/Web.Api` and the test projects — every `namespace Web.Api.*`, every `using Web.Api.*`, the `<RootNamespace>`/`InternalsVisibleTo` entries, and the `Program`/`Web.Api` partial-class hook used by the integration tests. If they're fine with the plain `Web.Api` namespace, skip this.
-- Replace the template's hardcoded identifiers: the database name and `Jwt:Issuer`/`Audience` in `appsettings*.json`, the `POSTGRES_DB`/service names + `Host=` in `docker-compose.yml`, the `README.md` title, and any `UserSecretsId` if they want a fresh one.
+- Renombra `VerticalSlice.slnx` → `{Name}.slnx`.
+- Si el usuario quiere su propio namespace raíz (p. ej. `Acme.Billing` en lugar de `Web.Api`), renombra el namespace `Web.Api` en `src/Web.Api` y en los proyectos de tests: cada `namespace Web.Api.*`, cada `using Web.Api.*`, las entradas `<RootNamespace>`/`InternalsVisibleTo` y el hook de clase parcial `Program`/`Web.Api` que usan los tests de integración. Si le parece bien quedarse con el namespace `Web.Api`, omite este paso.
+- Reemplaza los identificadores fijos de la plantilla: el nombre de la base de datos y `Jwt:Issuer`/`Audience` en `appsettings*.json`, `POSTGRES_DB`/los nombres de servicio + `Host=` en `docker-compose.yml`, el título del `README.md` y cualquier `UserSecretsId` si quiere uno nuevo.
 
-## 2. Remove the Todos sample
+## 2. Eliminar el ejemplo Todos
 
-Delete the Todos slice everywhere:
+Elimina el slice de Todos en todas partes:
 
-- `src/Web.Api/Features/Todos/` (the whole folder — entity, errors, domain events, cache keys, and every slice file).
+- `src/Web.Api/Features/Todos/` (la carpeta completa: entidad, errores, eventos de dominio, claves de cache y cada archivo de slice).
 - `src/Web.Api/Database/Configurations/TodoItemConfiguration.cs`.
-- Remove the `TodoItems` `DbSet` from `ApplicationDbContext` (there is no `IApplicationDbContext` and no `TestDbContext` to update — the concrete context is the only declaration).
-- `tests/Web.Api.UnitTests/Todos/` and `tests/IntegrationTests/Todos/`.
-- Drop the table with a migration (`/add-migration Remove_Todos`), or — for a brand-new database — delete `src/Web.Api/Database/Migrations/`, `dotnet ef migrations add Initial --project src/Web.Api --startup-project src/Web.Api`, and let it recreate.
+- Quita el `DbSet` `TodoItems` de `ApplicationDbContext` (no existe `IApplicationDbContext` ni `TestDbContext` que actualizar; el contexto concreto es la única declaración).
+- `tests/Web.Api.UnitTests/Todos/` y `tests/IntegrationTests/Todos/`.
+- Elimina la tabla con una migración (`/add-migration Remove_Todos`) o, para una base de datos totalmente nueva, borra `src/Web.Api/Database/Migrations/`, ejecuta `dotnet ef migrations add Initial --project src/Web.Api --startup-project src/Web.Api` y deja que se recree.
 
-## Rules
+## Reglas
 
-- Keep the whole single-project structure and every cross-cutting concern (`Common`, `Database`, `Authentication`, `Authorization`, `Notifications`, endpoints, rate limiting, security headers, observability) plus `Features/Users/` and its auth slices — only the *sample feature* is removed.
-- Build + `dotnet test` after each stage; the ArchitectureTests and integration tests surface any dangling reference.
-- Leave the `.claude/skills/` pack in place so the conventions travel with the new project.
+- Conserva toda la estructura de proyecto único y cada aspecto transversal (`Common`, `Database`, `Authentication`, `Authorization`, `Notifications`, endpoints, rate limiting, cabeceras de seguridad, observabilidad), además de `Features/Users/` y sus slices de auth; solo se elimina la *feature de ejemplo*.
+- Compila y ejecuta `dotnet test` después de cada etapa; los ArchitectureTests y los tests de integración revelan cualquier referencia colgante.
+- Deja el paquete `.claude/skills/` en su lugar para que las convenciones acompañen al nuevo proyecto.

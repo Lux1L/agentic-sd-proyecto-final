@@ -1,10 +1,10 @@
-# Endpoint Templates
+# Plantillas de endpoint
 
-The endpoint is **not a separate file** — it is a nested `public sealed class Endpoint : IEndpoint` inside the slice's `public static class {UseCase}` (same file, `src/Web.Api/Features/{Entity}/{UseCase}.cs`). `IEndpoint`, `Tags`, and `.HasPermission(...)` come from `Web.Api.Common.Endpoints`; `CustomResults` from `Web.Api.Common`; the `.Match(...)` extension from `Web.Api.Common.Extensions`. Endpoints are auto-discovered by `AddEndpoints`/`MapEndpoints` (the scan reads `assembly.DefinedTypes`, which includes nested types) — no registration needed.
+El endpoint **no es un archivo aparte**: es una `public sealed class Endpoint : IEndpoint` anidada dentro de la `public static class {UseCase}` del slice (el mismo archivo, `src/Web.Api/Features/{Entity}/{UseCase}.cs`). `IEndpoint`, `Tags` y `.HasPermission(...)` provienen de `Web.Api.Common.Endpoints`; `CustomResults`, de `Web.Api.Common`; la extensión `.Match(...)`, de `Web.Api.Common.Extensions`. `AddEndpoints`/`MapEndpoints` descubren los endpoints automáticamente (el escaneo lee `assembly.DefinedTypes`, que incluye los tipos anidados), así que no hace falta registrarlos.
 
-Because `Command`/`Query`/`Response` are siblings inside the same static class, the endpoint references them unqualified.
+Como `Command`/`Query`/`Response` son hermanos dentro de la misma clase estática, el endpoint los referencia sin calificar.
 
-## Command with response body (POST → 200 + value)
+## Command con cuerpo de respuesta (POST → 200 + valor)
 
 ```csharp
 public sealed class Endpoint : IEndpoint
@@ -44,7 +44,7 @@ public sealed class Endpoint : IEndpoint
 }
 ```
 
-## Void command from route parameter (PUT/DELETE → 204)
+## Command sin retorno a partir de un parámetro de ruta (PUT/DELETE → 204)
 
 ```csharp
 public sealed class Endpoint : IEndpoint
@@ -91,11 +91,11 @@ public sealed class Endpoint : IEndpoint
 }
 ```
 
-## Rules
+## Reglas
 
-- Routes are lowercase, plural, no leading slash: `todos`, `todos/{id:guid}`, `users/{userId:guid}/todos`. Route constraints (`:guid`) on all typed parameters.
-- The nested `Request` class exists only when there's a JSON body; it maps 1:1 to the `Command` inside the lambda (enum values arrive as `int` and are cast). When the input is a single route parameter, build the `Command` directly from it — no `Request`.
-- Resolve the handler interface (`ICommandHandler<...>` / `IQueryHandler<...>`, from `Web.Api.Common.Messaging`) directly as a lambda parameter — the decorated instance is injected.
-- Always end with `.WithTags(Tags.{Feature})` and `.RequireAuthorization()` (or `.HasPermission(Permissions.X)` where a permission constant exists). Add the feature constant to `Tags` (in `Common/Endpoints/`) if new.
-- Failures never get hand-rolled responses — `CustomResults.Problem` translates the `Error` to RFC 7807 ProblemDetails with the right status code.
-- The endpoint may reference another feature's domain types, but never another feature's `Command`/`Query`/`Handler`.
+- Las rutas van en minúsculas, en plural y sin slash inicial: `todos`, `todos/{id:guid}`, `users/{userId:guid}/todos`. Restricciones de ruta (`:guid`) en todos los parámetros tipados.
+- La clase `Request` anidada existe solo cuando hay un cuerpo JSON; se mapea 1:1 al `Command` dentro de la lambda (los valores de enum llegan como `int` y se castean). Cuando la entrada es un único parámetro de ruta, construye el `Command` directamente a partir de él, sin `Request`.
+- Resuelve la interfaz del handler (`ICommandHandler<...>` / `IQueryHandler<...>`, de `Web.Api.Common.Messaging`) directamente como parámetro de la lambda; se inyecta la instancia decorada.
+- Termina siempre con `.WithTags(Tags.{Feature})` y `.RequireAuthorization()` (o `.HasPermission(Permissions.X)` cuando exista una constante de permiso). Si la feature es nueva, agrega su constante a `Tags` (en `Common/Endpoints/`).
+- Los fallos nunca reciben respuestas armadas a mano: `CustomResults.Problem` traduce el `Error` a un ProblemDetails RFC 7807 con el código de estado correcto.
+- El endpoint puede referenciar los tipos de dominio de otra feature, pero nunca el `Command`/`Query`/`Handler` de otra feature.

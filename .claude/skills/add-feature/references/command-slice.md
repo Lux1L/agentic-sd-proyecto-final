@@ -1,8 +1,8 @@
-# Command Slice Templates
+# Plantillas de slice de command
 
-A command use case is **one file**: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`. Everything below is nested inside `public static class {UseCase}`. Replace `{Entity}` (feature folder, plural, e.g. `Todos`), `{UseCase}` (e.g. `ArchiveTodo`), and the domain type names throughout.
+Un caso de uso de tipo command es **un archivo**: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`. Todo lo que sigue va anidado dentro de `public static class {UseCase}`. Reemplaza `{Entity}` (carpeta de la feature, en plural, p. ej. `Todos`), `{UseCase}` (p. ej. `ArchiveTodo`) y los nombres de los tipos de dominio en todo el archivo.
 
-## Full slice skeleton
+## Esqueleto completo del slice
 
 ```csharp
 using FluentValidation;
@@ -61,20 +61,20 @@ public static class ArchiveTodo
         }
     }
 
-    // The endpoint is nested in this same file — see endpoint.md.
+    // El endpoint va anidado en este mismo archivo — ver endpoint.md.
     public sealed class Endpoint : IEndpoint { /* ... */ }
 }
 ```
 
 ## Command
 
-Positional record for few parameters (nested):
+Record posicional cuando hay pocos parámetros (anidado):
 
 ```csharp
 public sealed record Command(Guid TodoItemId) : ICommand;
 ```
 
-Class with settable properties when there are many parameters (matches `CreateTodo.Command`):
+Clase con propiedades con setter cuando hay muchos parámetros (igual que `CreateTodo.Command`):
 
 ```csharp
 public sealed class Command : ICommand<Guid>
@@ -87,13 +87,13 @@ public sealed class Command : ICommand<Guid>
 }
 ```
 
-- `ICommand` → handler returns `Result` (endpoint responds `204 NoContent`).
-- `ICommand<TResponse>` → handler returns `Result<TResponse>` (endpoint responds `200 Ok`).
-- `ICommand`/`ICommand<T>` come from `Web.Api.Common.Messaging`.
+- `ICommand` → el handler devuelve `Result` (el endpoint responde `204 NoContent`).
+- `ICommand<TResponse>` → el handler devuelve `Result<TResponse>` (el endpoint responde `200 Ok`).
+- `ICommand`/`ICommand<T>` provienen de `Web.Api.Common.Messaging`.
 
 ## Validator
 
-Nested `public sealed class Validator : AbstractValidator<Command>`. Auto-registered and executed by `ValidationDecorator` before the handler runs. Because `Command` is nested, `AbstractValidator<Command>` resolves without qualification inside the slice class.
+`public sealed class Validator : AbstractValidator<Command>` anidado. Se registra automáticamente y `ValidationDecorator` lo ejecuta antes de que corra el handler. Como `Command` está anidado, `AbstractValidator<Command>` se resuelve sin calificar dentro de la clase del slice.
 
 ```csharp
 public sealed class Validator : AbstractValidator<Command>
@@ -110,7 +110,7 @@ public sealed class Validator : AbstractValidator<Command>
 
 ## Handler
 
-`internal sealed class Handler`, primary constructor, `ApplicationDbContext` for data access — **injected directly**, there is no `IApplicationDbContext`. Guard clauses return `Result.Failure` with feature errors; the happy path mutates, raises a domain event, saves, and returns.
+`internal sealed class Handler`, constructor primario, `ApplicationDbContext` para el acceso a datos — **inyectado directamente**, no existe `IApplicationDbContext`. Las cláusulas de guarda devuelven `Result.Failure` con los errores de la feature; el camino feliz modifica, emite un evento de dominio, guarda y devuelve.
 
 ```csharp
 internal sealed class Handler(
@@ -156,18 +156,18 @@ internal sealed class Handler(
 }
 ```
 
-Notes:
-- `Handler` is `internal`, but the assembly scan finds it (Scrutor `AssignableTo(ICommandHandler<,>)` over `DefinedTypes`, which includes nested types).
-- Ownership: either filter by `userContext.UserId` in the query (preferred) or compare explicitly and return `Result.Failure(UserErrors.Unauthorized())`. `IUserContext` is in `Web.Api.Authentication`; `UserErrors`/`User` in `Web.Api.Features.Users` (add `using Web.Api.Features.Users;` — a domain-type reference, which is allowed across features).
-- `IDateTimeProvider` (from `Web.Api.Common`) for timestamps — never `DateTime.UtcNow` directly.
-- If the command invalidates cached query data, inject `HybridCache` and call `cache.RemoveAsync({Feature}CacheKeys.X(...), cancellationToken)` after saving.
-- For a returning command (`ICommand<Guid>`), return the value directly — `Result<T>` has an implicit conversion: `return todoItem.Id;`.
+Notas:
+- `Handler` es `internal`, pero el escaneo del assembly lo encuentra (Scrutor `AssignableTo(ICommandHandler<,>)` sobre `DefinedTypes`, que incluye los tipos anidados).
+- Propiedad: filtra por `userContext.UserId` en la consulta (preferido) o compara explícitamente y devuelve `Result.Failure(UserErrors.Unauthorized())`. `IUserContext` está en `Web.Api.Authentication`; `UserErrors`/`User` en `Web.Api.Features.Users` (agrega `using Web.Api.Features.Users;` — una referencia a un tipo de dominio, permitida entre features).
+- `IDateTimeProvider` (de `Web.Api.Common`) para las marcas de tiempo — nunca `DateTime.UtcNow` directamente.
+- Si el command invalida datos de queries cacheados, inyecta `HybridCache` y llama a `cache.RemoveAsync({Feature}CacheKeys.X(...), cancellationToken)` después de guardar.
+- Para un command que devuelve un valor (`ICommand<Guid>`), devuelve el valor directamente — `Result<T>` tiene una conversión implícita: `return todoItem.Id;`.
 
-## Domain additions (if needed)
+## Agregados al dominio (si se necesitan)
 
-These are domain types and live in the feature folder (`Features/{Entity}/`), namespace `Web.Api.Features.{Entity}` — see the `add-entity` skill.
+Estos son tipos de dominio y viven en la carpeta de la feature (`Features/{Entity}/`), namespace `Web.Api.Features.{Entity}` — ver la skill `add-entity`.
 
-Error factory on the existing `{Entity}Errors` class:
+Factory de error en la clase `{Entity}Errors` existente:
 
 ```csharp
 public static Error AlreadyArchived(Guid todoItemId) => Error.Problem(
@@ -175,9 +175,9 @@ public static Error AlreadyArchived(Guid todoItemId) => Error.Problem(
     $"The todo item with Id = '{todoItemId}' is already archived.");
 ```
 
-Error type → HTTP status (via `CustomResults.Problem`): `NotFound` → 404, `Conflict` → 409, `Problem`/`Validation` → 400, `Failure` → 500.
+Tipo de error → código HTTP (mediante `CustomResults.Problem`): `NotFound` → 404, `Conflict` → 409, `Problem`/`Validation` → 400, `Failure` → 500.
 
-Domain event, one file each in `Features/{Entity}/`:
+Evento de dominio, un archivo por cada uno en `Features/{Entity}/`:
 
 ```csharp
 using Web.Api.Common;
@@ -187,7 +187,7 @@ namespace Web.Api.Features.Todos;
 public sealed record TodoItemArchivedDomainEvent(Guid TodoItemId) : IDomainEvent;
 ```
 
-Optional event handler — a small standalone type (it isn't a use case, so it need not be nested):
+Handler de evento opcional — un tipo pequeño e independiente (no es un caso de uso, así que no necesita estar anidado):
 
 ```csharp
 using Web.Api.Common;
@@ -198,7 +198,7 @@ internal sealed class TodoItemArchivedDomainEventHandler : IDomainEventHandler<T
 {
     public Task Handle(TodoItemArchivedDomainEvent domainEvent, CancellationToken cancellationToken)
     {
-        // Side effects here (notifications, projections, ...)
+        // Efectos secundarios aquí (notificaciones, proyecciones, ...)
         return Task.CompletedTask;
     }
 }

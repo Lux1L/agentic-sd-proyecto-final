@@ -1,8 +1,8 @@
-# Query Slice Templates
+# Plantillas de slice de query
 
-A query use case is **one file**: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`. Everything below is nested inside `public static class {UseCase}`. Queries are reads: no validator, no domain events, no `SaveChangesAsync`.
+Un caso de uso de tipo query es **un archivo**: `src/Web.Api/Features/{Entity}/{UseCase}.cs`, namespace `Web.Api.Features.{Entity}`. Todo lo que sigue va anidado dentro de `public static class {UseCase}`. Las queries son lecturas: sin validator, sin eventos de dominio, sin `SaveChangesAsync`.
 
-## Full slice skeleton
+## Esqueleto completo del slice
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
@@ -61,36 +61,36 @@ public static class GetOverdueTodos
         }
     }
 
-    // The endpoint is nested in this same file — see endpoint.md.
+    // El endpoint va anidado en este mismo archivo — ver endpoint.md.
     public sealed class Endpoint : IEndpoint { /* ... */ }
 }
 ```
 
 ## Query
 
-Parameterless (nested):
+Sin parámetros (anidado):
 
 ```csharp
 public sealed record Query : IQuery<List<Response>>;
 ```
 
-With parameters: `public sealed record Query(Guid TodoItemId) : IQuery<Response>;`
+Con parámetros: `public sealed record Query(Guid TodoItemId) : IQuery<Response>;`
 
-`IQuery<T>` / `IQueryHandler<Q, T>` come from `Web.Api.Common.Messaging`.
+`IQuery<T>` / `IQueryHandler<Q, T>` provienen de `Web.Api.Common.Messaging`.
 
-## Response DTO
+## DTO de respuesta
 
-A nested `public sealed class Response` — flat, serialization-friendly, never a domain entity. Each slice owns its own `Response`; do not share DTOs across slices even if they look identical today. Because it is nested, the handler and endpoint reference it unqualified as `Response`.
+Una `public sealed class Response` anidada: plana, fácil de serializar y nunca una entidad de dominio. Cada slice tiene su propio `Response`; no compartas DTOs entre slices aunque hoy se vean idénticos. Como está anidada, el handler y el endpoint la referencian sin calificar como `Response`.
 
 ## Handler
 
-`internal sealed class Handler`, `ApplicationDbContext` injected directly (no `IApplicationDbContext`). Scope to the current user and project with `.Select` straight into the nested `Response`. For single-item queries, return `Result.Failure<Response>(TodoItemErrors.NotFound(id))` when nothing matches.
+`internal sealed class Handler`, con `ApplicationDbContext` inyectado directamente (sin `IApplicationDbContext`). Limita al usuario actual y proyecta con `.Select` directamente al `Response` anidado. Para queries de un solo elemento, devuelve `Result.Failure<Response>(TodoItemErrors.NotFound(id))` cuando no haya coincidencias.
 
-`IUserContext` is in `Web.Api.Authentication`; `IDateTimeProvider`, `Result` in `Web.Api.Common`; `TodoItemErrors` in the feature namespace.
+`IUserContext` está en `Web.Api.Authentication`; `IDateTimeProvider` y `Result`, en `Web.Api.Common`; `TodoItemErrors`, en el namespace de la feature.
 
-## Caching (optional, hot reads only)
+## Cache (opcional, solo para lecturas frecuentes)
 
-The cache-keys class is a feature-level helper (not a use case), so it is its own small file in the feature folder:
+La clase de claves de cache es un helper a nivel de feature (no un caso de uso), así que va en su propio archivo pequeño dentro de la carpeta de la feature:
 
 ```csharp
 namespace Web.Api.Features.Todos;
@@ -101,7 +101,7 @@ internal static class TodoCacheKeys
 }
 ```
 
-Inject `HybridCache` into the handler and wrap the database query:
+Inyecta `HybridCache` en el handler y envuelve la consulta a la base de datos:
 
 ```csharp
 Response? todo = await cache.GetOrCreateAsync(
@@ -113,4 +113,4 @@ Response? todo = await cache.GetOrCreateAsync(
     cancellationToken: cancellationToken);
 ```
 
-Every command that mutates the cached data must invalidate the same key with `cache.RemoveAsync(...)`. If you can't enumerate the affected keys, don't cache.
+Cada command que modifica los datos cacheados debe invalidar la misma clave con `cache.RemoveAsync(...)`. Si no puedes enumerar las claves afectadas, no uses cache.

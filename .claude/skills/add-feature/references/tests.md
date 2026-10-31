@@ -1,14 +1,14 @@
-# Test Templates
+# Plantillas de tests
 
-Stack: xUnit + Shouldly + NSubstitute (unit), FluentValidation.TestHelper (validators), WebApplicationFactory + Testcontainers (integration). Every new use case gets all three. Because the slice is one static class, its members are referenced qualified: `CreateTodo.Command`, `new CreateTodo.Handler(...)`, `new CreateTodo.Validator()`.
+Stack: xUnit + Shouldly + NSubstitute (unitarios), FluentValidation.TestHelper (validators), WebApplicationFactory + Testcontainers (integración). Cada caso de uso nuevo lleva los tres. Como el slice es una sola clase estática, sus miembros se referencian de forma calificada: `CreateTodo.Command`, `new CreateTodo.Handler(...)`, `new CreateTodo.Validator()`.
 
-`GlobalUsings.cs` already imports `Xunit`, `NSubstitute`, and `Shouldly` — don't re-add those. `Result`/`Error` come from `Web.Api.Common`; the slice, entity, errors, and domain events from `Web.Api.Features.{Entity}`.
+`GlobalUsings.cs` ya importa `Xunit`, `NSubstitute` y `Shouldly`; no los vuelvas a agregar. `Result`/`Error` provienen de `Web.Api.Common`; el slice, la entidad, los errores y los eventos de dominio, de `Web.Api.Features.{Entity}`.
 
-## Handler unit tests
+## Tests unitarios del handler
 
-`tests/Web.Api.UnitTests/{Feature}/{UseCase}HandlerTests.cs`. Inherit `BaseHandlerTest` — it provides `CreateDbContext()` (a fresh in-memory `ApplicationDbContext`) and `CreateCache()` (a real `HybridCache`). There is no `IApplicationDbContext`/`TestDbContext` in this template: handlers take the concrete `ApplicationDbContext`, so tests use it directly. Mock only interfaces (`IUserContext`, `IDateTimeProvider`) with NSubstitute.
+`tests/Web.Api.UnitTests/{Feature}/{UseCase}HandlerTests.cs`. Hereda de `BaseHandlerTest`, que provee `CreateDbContext()` (un `ApplicationDbContext` nuevo en memoria) y `CreateCache()` (un `HybridCache` real). En esta plantilla no existe `IApplicationDbContext`/`TestDbContext`: los handlers reciben el `ApplicationDbContext` concreto, así que los tests lo usan directamente. Haz mock solo de interfaces (`IUserContext`, `IDateTimeProvider`) con NSubstitute.
 
-Cover: each failure path (one test per guard clause) and the happy path including persisted state and raised domain events.
+Cubre: cada camino de fallo (un test por cláusula de guarda) y el camino feliz, incluyendo el estado persistido y los eventos de dominio emitidos.
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
@@ -79,15 +79,15 @@ public sealed class ArchiveTodoHandlerTests : BaseHandlerTest
 }
 ```
 
-Conventions:
-- Test names: `Handle_Should_{Outcome}_When{Condition}`.
-- `// Arrange` / `// Act` / `// Assert` comments in every test.
-- Assert failures by comparing the exact error: `result.Error.ShouldBe(TodoItemErrors.NotFound(id))`.
-- New entity properties flow through automatically. Adding a whole new `DbSet` is an `add-entity` step (it lands on `ApplicationDbContext`, which the in-memory test context uses as-is).
+Convenciones:
+- Nombres de tests: `Handle_Should_{Outcome}_When{Condition}`.
+- Comentarios `// Arrange` / `// Act` / `// Assert` en cada test.
+- Verifica los fallos comparando el error exacto: `result.Error.ShouldBe(TodoItemErrors.NotFound(id))`.
+- Las propiedades nuevas de una entidad se reflejan automáticamente. Agregar un `DbSet` completamente nuevo es un paso de `add-entity` (va en `ApplicationDbContext`, que el contexto de test en memoria usa tal cual).
 
-## Validator tests
+## Tests de validators
 
-`tests/Web.Api.UnitTests/{Feature}/{Feature}ValidatorsTests.cs` (extend the existing file if present). One class covers all validators of a feature; each validator is the slice's nested `Validator`.
+`tests/Web.Api.UnitTests/{Feature}/{Feature}ValidatorsTests.cs` (extiende el archivo existente si lo hay). Una sola clase cubre todos los validators de una feature; cada validator es el `Validator` anidado del slice.
 
 ```csharp
 using FluentValidation.TestHelper;
@@ -112,11 +112,11 @@ public void CreateValidator_Should_HaveError_WhenDescriptionIsEmpty()
 }
 ```
 
-Cover each rule's failure plus one fully-valid command (`ShouldNotHaveAnyValidationErrors`).
+Cubre el fallo de cada regla más un command completamente válido (`ShouldNotHaveAnyValidationErrors`).
 
-## Integration tests
+## Tests de integración
 
-`tests/IntegrationTests/{Feature}/{Feature}Tests.cs` (extend the existing file if present). Inherit `BaseIntegrationTest(factory)` — it runs the real API against a Testcontainers Postgres and provides `HttpClient`, `RegisterAndLoginAsync()`, and `Authenticate(token)`. Tests go through real HTTP, never call handlers directly, so they don't reference the slice types — define private response DTO records inside the test class (see `TodosTests.TodoDto`).
+`tests/IntegrationTests/{Feature}/{Feature}Tests.cs` (extiende el archivo existente si lo hay). Hereda de `BaseIntegrationTest(factory)`, que ejecuta la API real contra un Postgres de Testcontainers y provee `HttpClient`, `RegisterAndLoginAsync()` y `Authenticate(token)`. Los tests pasan por HTTP real y nunca llaman a los handlers directamente, así que no referencian los tipos del slice: define records privados de DTO de respuesta dentro de la clase de test (ver `TodosTests.TodoDto`).
 
 ```csharp
 [Fact]
@@ -145,12 +145,12 @@ public async Task ArchiveTodo_Should_MarkTodoAsArchived()
 }
 ```
 
-Minimum coverage per endpoint: one unauthorized test (no token → 401) if it's a new route family, one happy-path test asserting observable state via a follow-up GET, and one failure translation test (e.g. unknown id → 404) when the handler has failure paths.
+Cobertura mínima por endpoint: un test de no autorizado (sin token → 401) si es una familia de rutas nueva, un test del camino feliz que verifique el estado observable mediante un GET posterior y un test de traducción de fallos (p. ej. id desconocido → 404) cuando el handler tenga caminos de fallo.
 
-## Run
+## Ejecutar
 
 ```
 dotnet test
 ```
 
-Integration tests need Docker running (Testcontainers).
+Los tests de integración necesitan Docker corriendo (Testcontainers).
