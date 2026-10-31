@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Web.Api.Common;
 using Web.Api.Common.Endpoints;
@@ -11,6 +12,14 @@ namespace Web.Api.Features.Leases;
 public static class TerminateLease
 {
     public sealed record Command(Guid LeaseId) : ICommand;
+
+    public sealed class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleFor(c => c.LeaseId).NotEmpty();
+        }
+    }
 
     internal sealed class Handler(ApplicationDbContext context, IDateTimeProvider dateTimeProvider)
         : ICommandHandler<Command>

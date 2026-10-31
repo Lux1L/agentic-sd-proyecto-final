@@ -114,6 +114,25 @@ public sealed class PropertiesTests : BaseIntegrationTest
         page.Items.ShouldAllBe(p => p.Status == "Inactive");
     }
 
+    // RN-01 (CU-02)
+    [Fact]
+    public async Task Update_Should_ChangeNameAndAddress()
+    {
+        Guid id = await CreatePropertyAsync("Depa Original");
+
+        HttpResponseMessage response = await HttpClient.PutAsJsonAsync(
+            $"properties/{id}",
+            new { name = "Depa Renovado", address = "Jr. Cusco 456", type = "Apartment" });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        PropertyDto? property = await HttpClient.GetFromJsonAsync<PropertyDto>($"properties/{id}");
+        property.ShouldNotBeNull();
+        property.Name.ShouldBe("Depa Renovado");
+        property.Address.ShouldBe("Jr. Cusco 456");
+        property.Type.ShouldBe("Apartment");
+    }
+
     // RN-02
     [Fact]
     public async Task Deactivate_Should_ReturnConflict_When_ActiveLease()

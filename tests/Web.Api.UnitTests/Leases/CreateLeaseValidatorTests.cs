@@ -28,6 +28,7 @@ public class CreateLeaseValidatorTests
         deposit,
         paymentDay);
 
+    // RN-06, RN-07, RN-08, RN-09
     [Fact]
     public void Validate_Should_Pass_WhenCommandIsValid()
     {

@@ -32,6 +32,9 @@ public static class GetProperties
     {
         public async Task<Result<PagedList<Response>>> Handle(Query query, CancellationToken cancellationToken)
         {
+            int page = query.Page is null or < 1 ? 1 : query.Page.Value;
+            int pageSize = query.PageSize is null or < 1 or > 100 ? 20 : query.PageSize.Value;
+
             IQueryable<Property> properties = context.Properties.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(query.Search))
@@ -61,8 +64,8 @@ public static class GetProperties
 
             return await PagedList<Response>.CreateAsync(
                 responses,
-                query.Page ?? 1,
-                query.PageSize ?? 10,
+                page,
+                pageSize,
                 cancellationToken);
         }
     }

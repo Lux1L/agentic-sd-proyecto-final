@@ -81,6 +81,7 @@ public sealed class PortfolioTests(IntegrationTestWebAppFactory factory) : BaseI
         body.GetProperty("leasedProperties").GetInt32().ShouldBeGreaterThanOrEqualTo(2);
     }
 
+    // RNF-03
     [Fact]
     public async Task GetSummary_Should_ReturnUnauthorized_WhenNoToken()
     {

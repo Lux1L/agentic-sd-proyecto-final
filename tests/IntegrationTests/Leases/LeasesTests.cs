@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Web.Api.Database;
+using Web.Api.Features.Leases;
 using Web.Api.Features.Properties;
 
 namespace IntegrationTests.Leases;
@@ -26,6 +27,24 @@ public sealed class LeasesTests : BaseIntegrationTest
         List<PeriodDto> Periods);
 
     private sealed record LeaseDto(Guid Id, string Status, string? TerminatedOn);
+
+    private sealed record LeasePageDto(List<LeaseDto> Items);
+
+    private static Lease NewLease(Guid id, Guid propertyId, LeaseStatus status, DateOnly start) => new()
+    {
+        Id = id,
+        PropertyId = propertyId,
+        TenantFullName = "Maria Quispe",
+        TenantDocumentType = DocumentType.Dni,
+        TenantDocumentNumber = "45678912",
+        StartDate = start,
+        EndDate = start.AddMonths(12).AddDays(-1),
+        MonthlyRent = 1000m,
+        Deposit = 1000m,
+        PaymentDay = 1,
+        Status = status,
+        CreatedAt = DateTime.UtcNow
+    };
 
     private static DateOnly LimaToday() => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5));
 
@@ -126,6 +145,33 @@ public sealed class LeasesTests : BaseIntegrationTest
             LeaseBody(propertyId, new DateOnly(2030, 6, 1), new DateOnly(2031, 5, 31)));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    // HU-03 (RF-03)
+    [Fact]
+    public async Task GetLeases_Should_FilterByPropertyAndStatus()
+    {
+        // Arrange
+        await AuthenticateAsync();
+        Guid propertyId = await CreatePropertyAsync();
+        var activeId = Guid.NewGuid();
+        var terminatedId = Guid.NewGuid();
+        using (IServiceScope scope = _factory.Services.CreateScope())
+        {
+            ApplicationDbContext db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Leases.Add(NewLease(activeId, propertyId, LeaseStatus.Active, new DateOnly(2030, 1, 1)));
+            db.Leases.Add(NewLease(terminatedId, propertyId, LeaseStatus.Terminated, new DateOnly(2028, 1, 1)));
+            await db.SaveChangesAsync();
+        }
+
+        // Act
+        LeasePageDto? page = await HttpClient.GetFromJsonAsync<LeasePageDto>(
+            $"leases?propertyId={propertyId}&status=Active");
+
+        // Assert
+        page.ShouldNotBeNull();
+        page.Items.Count.ShouldBe(1);
+        page.Items[0].Id.ShouldBe(activeId);
     }
 
     // RN-14
