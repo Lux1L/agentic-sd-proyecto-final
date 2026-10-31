@@ -16,6 +16,7 @@ async function llenarContrato(page: Page, tipo: 'RUC' | 'DNI', doc: string) {
 }
 
 test.describe('Nuevo contrato sobre propiedad propia', () => {
+  // HU-02 (RF-02), HU-04 (RF-04), HU-05 (RF-05); RN-05, RN-09, RN-15
   test('HU-02/04/05: valida documento, crea contrato, abona parcial y rechaza solapamiento', async ({ page, request }) => {
     const prop = await crearPropiedad(request)
     await test.step('RN-09: RUC de persona natural con número inválido muestra error bajo el campo', async () => {
@@ -52,7 +53,8 @@ test.describe('Nuevo contrato sobre propiedad propia', () => {
       await page.goto(`/properties/${prop.id}/new-lease`)
       await llenarContrato(page, 'DNI', '45678913')
       await page.getByRole('button', { name: /guardar contrato/i }).click()
-      await expect(page.getByText(/Overlap|solap|traslap/i).first()).toBeVisible()
+      await expect(page.getByText(/Overlap/).first()).toBeVisible()
+      await expect(page.getByText(/Ya existe un contrato vigente para esta propiedad que se cruza con las fechas indicadas/).first()).toBeVisible()
       await expect(page).toHaveURL(/new-lease$/)
     })
   })

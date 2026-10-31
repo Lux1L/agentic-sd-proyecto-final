@@ -9,22 +9,27 @@ test.describe('Detalle con deuda: errores de negocio', () => {
     await expect(page.getByText('Días de atraso')).toBeVisible()
   })
 
+  // RN-14 (HU-04 / RF-04)
   test('HU-04 RN-14: un pago mayor al saldo es rechazado con un toast', async ({ page }) => {
     await page.getByRole('button', { name: /registrar pago/i }).click()
     await page.getByLabel(/monto/i).fill('99999')
     await page.getByRole('button', { name: /^registrar$/i }).click()
-    await expect(page.getByText(/PaymentExceedsRent|excede|supera/i).first()).toBeVisible()
+    await expect(page.getByText(/PaymentExceedsRent/).first()).toBeVisible()
+    await expect(page.getByText(/excede la renta del período/i).first()).toBeVisible()
     await expect(page.getByText('Pago registrado')).toHaveCount(0)
   })
 
+  // RN-11 (HU-06 / RF-06)
   test('HU-06 RN-11: terminar con saldo pendiente es rechazado y el contrato sigue activo', async ({ page }) => {
     await page.getByRole('button', { name: /terminar contrato/i }).click()
     await page.getByRole('alertdialog').getByRole('button', { name: /terminar contrato/i }).click()
-    await expect(page.getByText(/HasOutstandingBalance|saldo pendiente/i).first()).toBeVisible()
+    await expect(page.getByText(/HasOutstandingBalance/).first()).toBeVisible()
+    await expect(page.getByText(/saldo pendiente/i).first()).toBeVisible()
     await expect(page.getByText('Contrato terminado')).toHaveCount(0)
     await expect(page.getByRole('button', { name: /registrar pago/i })).toBeVisible()
   })
 
+  // RN-13
   test('RN-13: el Select de período solo ofrece meses dentro del contrato', async ({ page }) => {
     const vigencia = await page.getByText(/^\d{2}\/\d{2}\/\d{4} – \d{2}\/\d{2}\/\d{4}$/).textContent()
     const [ini, fin] = vigencia!.split(' – ').map((d) => d.split('/').reverse().map(Number)) // [y, m, d]
@@ -36,8 +41,7 @@ test.describe('Detalle con deuda: errores de negocio', () => {
     await page.getByRole('button', { name: /registrar pago/i }).click()
     await page.getByLabel(/^período$/i).click()
     await expect(page.getByRole('option').first()).toBeVisible()
-    const opciones = (await page.getByRole('option').allTextContents()).map((t) => t.trim())
-    expect(opciones).toEqual(esperados)
+    await expect(page.getByRole('option')).toHaveText(esperados) // reintenta hasta que el Select termine de renderizar
     const antes = fmt.format(new Date(ini[0], ini[1] - 2, 1))
     const despues = fmt.format(new Date(fin[0], fin[1], 1))
     await expect(page.getByRole('option', { name: antes, exact: true })).toHaveCount(0)

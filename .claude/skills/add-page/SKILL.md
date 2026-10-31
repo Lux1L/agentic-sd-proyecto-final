@@ -11,13 +11,13 @@ Frontend en `web/` (React, react-router-dom, `@cloudflare/kumo`, pnpm). Cada reg
 ## Flujo
 
 1. **Contrato primero.** Lee el endpoint en `specs/technical/02-contrato-api.md` y pruébalo con `curl` (con `Authorization: Bearer`) antes de tipar. Agrega las interfaces en `web/src/api.ts` con la forma real de la respuesta (fechas como `string` ISO `YYYY-MM-DD`, períodos `YYYY-MM`, enums como unión de literales).
-2. **Página** en `web/src/pages/<Nombre>.tsx`, `export default function <Nombre>()`. Modelo de lectura: `Summary.tsx`; detalle con dialogs: `LeaseDetail.tsx`; formulario: `NewLease.tsx`.
+2. **Página** en `web/src/pages/<Nombre>.tsx`, `export default function <Nombre>()`. Modelo de lectura: `Summary.tsx`; detalle con dialogs: `LeaseDetail.tsx`; formulario: `NewLease.tsx`; **listado** (Table + Pagination + filtros con debounce): `Leases.tsx`.
 3. **Ruta lazy** en `web/src/App.tsx`, dentro del `<Route element={<Layout />}>` (exige sesión) salvo que sea pública:
    ```tsx
    const Nombre = lazy(() => import('./pages/Nombre'))
    <Route path="/nombre/:id" element={<Nombre />} />
    ```
-4. **Enlace de navegación**: `Layout.tsx` hoy solo tiene el logo (`Link href="/"`) y "Cerrar sesión", sin menú. Si la pantalla es navegable desde el encabezado, agrega ahí un `Link` de Kumo; si se llega desde otra página, usa `navigate()` o `Link`/`Breadcrumbs` allí.
+4. **Enlace de navegación**: `Layout.tsx` tiene el logo, los enlaces "Resumen" y "Contratos" y "Cerrar sesión". Si la pantalla es navegable desde el encabezado, agrega ahí otro `Link` de Kumo junto a esos; si se llega desde otra página, usa `navigate()` o `Link`/`Breadcrumbs` allí.
 5. **Pruebas y cierre**: sigue el checklist del final.
 
 ## Datos y errores
@@ -67,6 +67,8 @@ Todo se importa de `@cloudflare/kumo`. Los ejemplos son copia del código real; 
 | Confirmación destructiva | `Dialog.Root role="alertdialog"` | siempre montado, controlado con `open={endOpen} onOpenChange={setEndOpen}` |
 | Dialog con formulario | `Dialog.Root` + `Dialog` | igual, sin `role`; `Dialog.Title`, `Dialog.Close` |
 | Tabla | `Table` en `LayerCard className="p-0"` | `Table.Header/Row/Head/Body/Cell` |
+| Paginador | `Pagination` con `labels` en español | por defecto sale en inglés; pasa `labels={{ navigation: 'Paginación', firstPage: 'Primera página', previousPage: 'Página anterior', nextPage: 'Página siguiente', lastPage: 'Última página', pageNumber: 'Número de página' }}` (ver `paginationLabels` en `Leases.tsx`) |
+| Filtros de listado | `Select` (con `items`) + `Input` de búsqueda | estado en `useState`; el `Input` escribe `searchInput` y un `useEffect` con `setTimeout` ~300 ms lo copia a `search` y vuelve a la página 1; la carga se cancela con un flag `cancelled` (ver `Leases.tsx`) |
 | Lista vacía | `Empty` | `<Empty title="Aún no hay propiedades" description="…" />` |
 | Avance / proporción | `Meter` | `<Meter label={`Mes actual: ${formatMoney(pagado)} de ${formatMoney(total)}`} value={pct} showValue={false} />` (el dato tiene que venir de la API; si no viene, no lo inventes: pide el campo, E7) |
 | Carga | `Loader` | `<Loader size={32} />` |

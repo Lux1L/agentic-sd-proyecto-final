@@ -13,7 +13,7 @@ Los specs viven en `web/e2e/*.spec.ts`. Cada regla de abajo previene un defecto 
 1. Levanta la API (`http://localhost:5080`) y Vite (`http://localhost:5173`). `playwright.config.ts` no tiene `webServer`: si no están arriba, todo falla.
 2. `cd web && pnpm e2e`. Un spec: `pnpm e2e e2e/resumen.spec.ts`.
 3. Usa el **Google Chrome instalado** (`channel: 'chrome'`), con `locale: 'es-PE'` y `timezoneId: 'America/Lima'`. No ejecutes `playwright install`.
-4. La URL base está fija en la config; no hay variable de entorno para cambiarla.
+4. La URL base sale de `E2E_BASE_URL` (por defecto `http://localhost:5173`); la leen `playwright.config.ts` y `global-setup.ts`. Para correr la suite contra otro Vite (p. ej. desde un worktree): `E2E_BASE_URL=http://localhost:5174 pnpm e2e`. La API sigue en 5080.
 5. Al terminar de probar, `./scripts/reset-demo.sh` limpia las propiedades "E2E …" (detén la API antes; ver `docs/guion-demo.md`).
 
 ## Reglas
@@ -33,6 +33,9 @@ crearPropiedad(request: APIRequestContext): Promise<{ id: string; name: string }
 
 Las propiedades de demo ("Local comercial A", etc.) son **solo lectura**, o sirven para acciones que la API rechaza sin mutar (sobrepago RN-14, terminar con deuda RN-11). Si necesitas un contrato, créalo por la UI sobre tu propiedad. La segunda corrida seguida debe pasar con los datos que dejó la primera.
 
+### Robustez ante datos concurrentes
+Varios agentes o procesos pueden correr E2E a la vez contra la misma base. No supongas estado global: nada de "no hay resultados" ni "la lista tiene N filas" sobre datos compartidos. Para un estado vacío busca un término único del test (`zzz-sin-resultados-${Date.now()}`); para datos, crea los tuyos. Para listas de opciones usa `await expect(page.getByRole('option')).toHaveText([...])`, que reintenta, en vez de leer `allTextContents()` una sola vez.
+
 ### Selectores
 Accesibles y en español: `getByRole`, `getByLabel`, `getByText`. Sin CSS, salvo el calendario (dentro de `elegirFecha`). Nada de `waitForTimeout`: espera con `expect(...).toBeVisible()` y `toHaveURL`.
 
@@ -46,11 +49,14 @@ Controles propios (detalle y ejemplos en [references/controles.md](references/co
 ### Fechas (E1)
 Todo flujo que muestre o envíe una fecha por defecto necesita un test con otra zona horaria que verifique que es la de Lima: `test.use({ timezoneId: 'Asia/Tokyo' })` y comparar con `ddmmaaaa(hoyLima())`. Modelo: `fecha-lima.spec.ts`. Los tests con Lima por defecto no detectan este defecto.
 
+### Mensajes de error en español
+Los asserts de errores de negocio verifican el código (`PaymentExceedsRent`) **y** el `detail` en español ("excede la renta del período"), para que un mensaje sin traducir haga fallar el test.
+
 ### Defecto de la app vs defecto del test (E2)
 Si un test falla porque la app se comporta mal (mensaje en inglés, código de error equivocado, dato incorrecto), **no adaptes la aserción para que pase**: reproduce con curl, reporta el defecto y deja el test en rojo hasta que se corrija la app.
 
 ## Trazabilidad
-Encima de cada test, un comentario `// HU-xx (RF-xx)` o `// RN-xx` (o el prefijo en el título, como hace `detalle-errores.spec.ts`), y títulos en español. Registra el spec en la fila correspondiente de `specs/technical/03-trazabilidad.md` (esa matriz hoy no tiene referencias a `web/e2e`; añade ahí el nombre del spec en la columna Pruebas).
+Encima de **cada** `test(...)`, un comentario `// HU-xx (RF-xx)`, `// RN-xx` o `// RNF-03` (sesión y autorización) (o el prefijo en el título, como hace `detalle-errores.spec.ts`), y títulos en español. Registra el spec en la fila correspondiente de `specs/technical/03-trazabilidad.md` (esa matriz hoy no tiene referencias a `web/e2e`; añade ahí el nombre del spec en la columna Pruebas).
 
 ## Plantilla mínima
 

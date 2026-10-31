@@ -5,6 +5,7 @@ import { ddmmaaaa, hoyLima } from './helpers'
 test.describe('Fecha de negocio en zona horaria distinta de Lima', () => {
   test.use({ timezoneId: 'Asia/Tokyo' })
 
+  // RN-18
   test('RN-18: la fecha de pago por defecto es la de Lima', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('link', { name: /Local comercial A/ }).click()

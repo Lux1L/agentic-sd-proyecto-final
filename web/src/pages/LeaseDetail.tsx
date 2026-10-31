@@ -125,6 +125,7 @@ export default function LeaseDetail() {
         </LayerCard.Primary>
       </LayerCard>
 
+      {/* Excepción consciente a kumo-design content-text-size: KPI para demo (ver docs/ai-evidence) */}
       <Grid variant="2up" gap="base">
         <Surface className={`rounded-lg px-5 py-4 ${st.overdueDebt > 0 ? 'ring-kumo-danger bg-kumo-danger/10' : ''}`}>
           <Text variant="secondary">Deuda vencida</Text>

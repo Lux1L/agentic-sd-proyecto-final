@@ -4,12 +4,14 @@ test.describe('Resumen (HU-07)', () => {
   test.beforeEach(async ({ page }) => { await page.goto('/')
     await expect(page.getByRole('heading', { name: 'Resumen' })).toBeVisible() })
 
+  // HU-07 (RF-07)
   test('muestra las tarjetas KPI', async ({ page }) => {
     await expect(page.getByText('Propiedades', { exact: true })).toBeVisible()
     await expect(page.getByText('Alquiladas', { exact: true })).toBeVisible()
     await expect(page.getByText('Deuda vencida total')).toBeVisible()
   })
 
+  // HU-07 (RF-07)
   test('Local comercial A aparece atrasado con deuda y navega al detalle', async ({ page }) => {
     const tarjeta = page.getByRole('link', { name: /Local comercial A/ })
     await expect(tarjeta).toBeVisible()
