@@ -48,3 +48,13 @@ Claude creará el slice de un solo archivo (el command, el validator, el handler
 ## Personalización
 
 Cada skill es un archivo Markdown simple (`SKILL.md`, más plantillas en `references/`). ¿Prefieres otra estructura de carpetas, records en todas partes u otro stack de testing? Edita las plantillas una vez y todas las features futuras seguirán ese cambio. Las skills son la versión ejecutable del documento de convenciones de tu equipo.
+
+## Skills del frontend (`web/`)
+
+| Skill | Para qué |
+|---|---|
+| `/add-page` | Pantalla, ruta, formulario o dialog nuevo: tipos de la API, manejo de errores, fechas en hora de Lima y qué componente de Kumo usar para cada cosa. |
+| `/add-e2e` | Pruebas E2E con Playwright sobre Google Chrome: login único por el rate limit, datos aislados y test de zona horaria. |
+| `kumo-design` | Reglas visuales de Kumo (skill oficial de `cloudflare/kumo`). |
+
+Las dos primeras se escribieron a partir de lo que se repetía a mano en cada prompt a los agentes de frontend y de los defectos que se encontraron al probar en Chrome (`docs/ai-evidence/02-decisiones-y-revision.md`, sección E2E).

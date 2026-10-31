@@ -78,3 +78,10 @@ Un agente Sonnet ejecutó la skill en **solo lectura** sobre todo lo construido 
 
 Resultado: **11 tests E2E con Playwright sobre Google Chrome** (`channel: 'chrome'`, `locale es-PE`, `timezoneId America/Lima`), en verde en 3 corridas (2 del agente y 1 del orquestador tras las correcciones).
 | E7 | Opus | El agente K1 reportó con honestidad que el Meter no se podía calcular para Parcial/Atrasado porque el resumen no traía lo abonado del mes, y **no inventó un porcentaje**. | ✅ | Opus agregó `currentPeriodPaid` a `GET /portfolio/summary` con TDD (test de integración en rojo primero) y actualizó el contrato de la API. El Meter ahora refleja el abonado real en todos los estados. |
+
+## Skills del frontend
+
+| # | Origen | Propuesta | Resultado | Detalle |
+|---|---|---|---|---|
+| S1 | Humano | “Al FE le falta skills, ¿qué opinas?” | ✅ | Opus coincidió y lo fundamentó: a cada agente de frontend se le repetían a mano las mismas convenciones (fecha de Lima, `Select` con `items`, `DateField`, errores por clave, rate limit en E2E), y dos defectos (E1 y los selects con valores crudos) pasaron porque eso no estaba escrito. Propuso **solo 2 skills sacadas de lo que se repitió de verdad**, no un set especulativo. |
+| S2 | 2 agentes Sonnet en paralelo | `/add-page` (98 líneas + ejemplos) y `/add-e2e` (78 líneas + controles), cada regla trazada a un defecto (E1, E3, E4, E5, I12, I14–I16). | ✏️ | Opus revisó `/add-page`: agregó la fila de `Meter` con la regla de no inventar datos (E7) y corrigió el formato real de `periodLabel`. Además se agregó la sección “Frontend” a `CLAUDE.md` con 5 reglas duras. |

@@ -45,6 +45,17 @@ Todo vive en `src/Web.Api` (namespace raíz `Web.Api`). **No** hay proyectos Dom
 - `dotnet test ArriendoFamiliar.slnx`: las pruebas de integración usan Testcontainers, así que Docker debe estar corriendo.
 - **Analizadores estrictos:** `TreatWarningsAsErrors` + SonarAnalyzer. Usar `CultureInfo.InvariantCulture`, colecciones con `[.. x]` y `ToUpperInvariant`.
 
+## Frontend (`web/`)
+
+Vite + React + TypeScript + **Kumo** (`@cloudflare/kumo`) + Tailwind v4, con **pnpm**. `pnpm dev` levanta http://localhost:5173 (proxy `/api` → API en 5080). Reglas duras, todas salidas de defectos reales (ver `docs/ai-evidence/`, sección E2E):
+
+- **"Hoy" = `todayIso()`** (`web/src/format.ts`, hora de Lima). Nunca `new Date()` para fechas de negocio ni `toISOString()`. La API valida con America/Lima.
+- **Siempre componentes de Kumo** antes que HTML o estilos propios (`npx @cloudflare/kumo doc <Componente>`). Fechas con `DateField`, nunca `type="date"`/`"month"`. Cada `Select` lleva `items` para no mostrar valores crudos de enums.
+- **Errores**: `api()` + `useErrorHandler`. El negocio va en toast (`title`/`detail`) y la validación debajo del campo, según la **clave** de `errors`. Nunca inferir el campo del texto del mensaje.
+- Diseño: skill `kumo-design`. Excepción consciente: los KPI de montos en `text-3xl`.
+- Cada pantalla tiene su spec E2E (Playwright sobre Google Chrome, `cd web && pnpm e2e`), en verde 2 veces seguidas. Después: `./scripts/reset-demo.sh`.
+
 ## Skills
 
-`/add-feature` (caso de uso) · `/add-entity` · `/add-tests` · `/add-migration` · `/add-background-job` · `/bootstrap` · `/vsa-review` (revisión de convenciones).
+Backend: `/add-feature` (caso de uso) · `/add-entity` · `/add-tests` · `/add-migration` · `/add-background-job` · `/bootstrap` · `/vsa-review` (revisión de convenciones).
+Frontend: `/add-page` (pantalla, formulario o dialog) · `/add-e2e` (pruebas E2E en Chrome) · `kumo-design` (reglas visuales).
