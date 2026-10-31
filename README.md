@@ -22,7 +22,16 @@ La familia que alquila 2 a 6 unidades lleva los contratos en papel y los pagos e
 
 ## Cómo ejecutarlo
 
-Requisitos: .NET SDK 10, Docker y Node 20+ (para el frontend).
+Primero, una sola vez: `cp .env.example .env` (contraseña de Postgres de desarrollo; `.env` no se versiona y llega a los contenedores como Docker secret).
+
+**Todo en Docker** (solo requiere Docker):
+
+```bash
+docker compose --profile app up -d --build --wait
+#    → http://localhost:5173 (frontend) · http://localhost:5080/scalar/v1 (API)
+```
+
+**Para desarrollar** (requiere .NET SDK 10 y Node 20+ con pnpm):
 
 ```bash
 # 1. Base de datos (PostgreSQL 18.6 en el puerto 5432)
@@ -31,9 +40,13 @@ docker compose up -d
 # 2. API: aplica las migraciones y carga los datos de demo en Development
 dotnet run --project src/Web.Api
 #    → http://localhost:5080/scalar/v1
+
+# 3. Frontend con hot reload
+cd web && pnpm install && pnpm dev
+#    → http://localhost:5173
 ```
 
-Opcional: `docker compose --profile observability up -d` levanta Grafana/Loki/Tempo en http://localhost:3000.
+Opcional: `docker compose --profile full up -d` suma Grafana/Loki/Tempo en http://localhost:3000. Los puertos se publican solo en `127.0.0.1`.
 
 ### Credenciales de prueba (solo Development)
 

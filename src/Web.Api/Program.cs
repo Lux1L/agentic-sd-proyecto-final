@@ -9,6 +9,9 @@ using Web.Api.Database;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+// Docker secrets (docker-compose.yml): /run/secrets/Database__Password → Database:Password
+builder.Configuration.AddKeyPerFile("/run/secrets", optional: true);
+
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddOpenApiWithAuth();
