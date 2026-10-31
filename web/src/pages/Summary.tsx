@@ -93,7 +93,7 @@ function LeaseRow({ p, period, upToDate, onPay }: { p: PortfolioProperty; period
         <Link
           href={`/leases/${p.leaseId}`}
           variant="plain"
-          className="group flex min-w-0 flex-col gap-1 rounded-md text-kumo-default hover:text-kumo-default focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kumo-focus"
+          className="group flex w-full min-w-0 flex-col items-start gap-1 rounded-md text-kumo-default hover:text-kumo-default focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kumo-focus"
         >
           <span className="flex flex-wrap items-center gap-2">
             <span className="group-hover:underline"><Text as="span" bold>{p.name}</Text></span>
