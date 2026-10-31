@@ -108,6 +108,11 @@ Escenario: Mora calculada (RN-15, RN-16, RN-17)
   Y octubre está Atrasado con 15 días de atraso
   Y la deuda vencida es S/ 700
 
+Escenario: Primer período de un contrato que empieza después del día de pago (RN-15)
+  Dado un contrato desde 2026-10-30 con día de pago 5
+  Y hoy es 2026-10-30
+  Entonces el período 2026-10 vence el 2026-10-30 y está Pendiente, no Atrasado
+
 Escenario: Medianoche en Lima (RN-18)
   Dado un período que vence el 2026-10-05
   Y el reloj marca 2026-10-06T03:00Z (22:00 del 5 de octubre en Lima)

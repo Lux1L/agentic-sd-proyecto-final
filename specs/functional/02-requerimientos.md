@@ -50,7 +50,7 @@ Cada regla de negocio (RN) indica **dónde se aplica** (validador = error 400 de
 
 | ID | Regla |
 |---|---|
-| RN-15 | El período `M` **vence** el día de pago de `M`. Se listan los períodos desde el mes de inicio hasta el menor entre el mes de fin y el mes actual (en hora de Lima). |
+| RN-15 | El período `M` **vence** el día de pago de `M`; **el primer período vence en la fecha de inicio del contrato si esta es posterior al día de pago** (se paga al firmar). Se listan los períodos desde el mes de inicio hasta el menor entre el mes de fin y el mes actual (en hora de Lima). |
 | RN-16 | Estado de un período: **Pagado** si lo abonado ≥ alquiler; **Atrasado** si hoy > fecha de vencimiento y lo abonado < alquiler (aunque haya abonos parciales); **Parcial** si hay abonos y aún no vence; **Pendiente** si no hay abonos y aún no vence. |
 | RN-17 | Días de atraso = hoy − fecha de vencimiento (solo períodos atrasados). **Deuda vencida** = suma de los saldos de los períodos atrasados. **Saldo pendiente** = suma de los saldos de todos los períodos listados. |
 | RN-18 | "Hoy" es la fecha calendario en **America/Lima (UTC−5)**, no en UTC. Un registro hecho a las 21:00 de Lima del 5 de octubre cuenta como 5 de octubre, aunque en UTC ya sea el 6. |
