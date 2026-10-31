@@ -401,3 +401,6 @@ FodyWeavers.xsd
 
 # macOS
 .DS_Store
+
+# Worktrees temporales de agentes de Claude Code
+.claude/worktrees/
