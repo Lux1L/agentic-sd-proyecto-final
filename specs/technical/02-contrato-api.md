@@ -8,7 +8,7 @@ Base: `http://localhost:5080`. Documentación interactiva en **`/scalar/v1`** (O
 |---|---|---|
 | POST | `/users/register` | Alta de usuario administrador. |
 | POST | `/users/login` | Devuelve el `accessToken` y el `refreshToken`. |
-| POST | `/users/refresh` | Rota el refresh token. |
+| POST | `/users/refresh-token` | Rota el refresh token. |
 
 ## Propiedades (RF-01)
 

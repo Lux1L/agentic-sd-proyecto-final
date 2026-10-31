@@ -12,15 +12,15 @@ erDiagram
         uuid id PK
         varchar(100) name
         varchar(200) address
-        int type "Apartment|House|Room|Commercial"
-        int status "Available|Leased|Inactive"
+        text type "Apartment|House|Room|Commercial"
+        text status "Available|Leased|Inactive"
         timestamptz created_at
     }
     LEASES {
         uuid id PK
         uuid property_id FK
         varchar(150) tenant_full_name
-        int tenant_document_type "Dni|Ce|Ruc"
+        text tenant_document_type "Dni|Ce|Ruc"
         varchar(12) tenant_document_number
         varchar(9) tenant_phone "nullable"
         varchar(200) tenant_email "nullable"
@@ -29,7 +29,7 @@ erDiagram
         numeric(12_2) monthly_rent
         numeric(12_2) deposit
         int payment_day "1..28"
-        int status "Active|Terminated"
+        text status "Active|Terminated"
         date terminated_on "nullable"
         timestamptz created_at
     }
@@ -40,7 +40,7 @@ erDiagram
         int period_month
         numeric(12_2) amount
         date paid_on
-        int method "Cash|BankTransfer|Yape|Plin"
+        text method "Cash|BankTransfer|Yape|Plin"
         timestamptz created_at
     }
 ```
@@ -53,6 +53,7 @@ erDiagram
 | Las fechas del contrato y del pago son **`date`** (`DateOnly`), no `timestamptz`. | Son fechas de calendario de negocio en Lima, no instantes. Así se evitan los corrimientos por zona horaria (RN-18). |
 | El período se guarda como **`period_year` + `period_month`**. | Permite indexar y agrupar sin parsear texto. En la API se expone como `"YYYY-MM"`. |
 | El **estado de cuenta no se persiste**: se calcula a partir de `leases` + `payments` + "hoy". | Nunca queda desactualizado y no necesita jobs. Ver ADR-004. |
+| Los enums se guardan como **texto** (`HasConversion<string>()`). | Se leen directo en SQL y coinciden con el JSON de la API. Lo propuso el agente de la Fase A y el orquestador lo aceptó. |
 | Montos en `numeric(12,2)` (`decimal`). | RNF-05: nunca `double` para dinero. |
 | `properties.status` se guarda (no se deriva). | Lo cambian casos de uso explícitos (RN-10, RN-11, CU-04) y el resumen lo lee sin joins. |
 
