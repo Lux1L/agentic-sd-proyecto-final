@@ -6,6 +6,7 @@ const map: Record<string, { label: string; variant: 'success' | 'warning' | 'err
   Overdue: { label: 'Atrasado', variant: 'error' },
   Pending: { label: 'Pendiente', variant: 'info' },
   Available: { label: 'Disponible', variant: 'neutral' },
+  Inactive: { label: 'Inactiva', variant: 'neutral' },
 }
 
 export function StatusBadge({ status }: { status?: string | null }) {

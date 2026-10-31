@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { expect, type APIRequestContext, type Page } from '@playwright/test'
 
-export const API = 'http://localhost:5080'
+export const API = process.env.E2E_API_URL ?? 'http://localhost:5080'
 export const EMAIL = 'admin@arriendo.pe'
 export const PASSWORD = 'Demo1234!'
 
@@ -42,4 +42,19 @@ export async function elegirFecha(page: Page, label: RegExp, iso: string) {
   }
   await dia.click()
   await expect(page.locator('.rdp-root')).toHaveCount(0)
+}
+
+/** Llena el formulario de nuevo contrato (inicio hoy, fin en un año, S/ 1,800, día de pago 5). */
+export async function llenarContrato(page: Page, tipo: 'RUC' | 'DNI', doc: string) {
+  await page.getByLabel(/nombre completo/i).fill('María Quispe Huamán')
+  await page.getByLabel(/tipo de documento/i).click()
+  await page.getByRole('option', { name: new RegExp(`^${tipo}$`) }).click()
+  await page.getByLabel(/número de documento/i).fill(doc)
+  await page.getByLabel(/celular/i).fill('987654321')
+  await elegirFecha(page, /^inicio:/i, hoyLima())
+  await elegirFecha(page, /^fin:/i, hoyLima(1))
+  await page.getByLabel(/alquiler mensual/i).fill('1800')
+  await page.getByLabel(/garantía/i).fill('3600')
+  await page.getByLabel(/día de pago/i).click()
+  await page.getByRole('option', { name: /^5$/ }).click()
 }

@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Banner, Breadcrumbs, Button, Dialog, Empty, Grid, InputGroup, LayerCard, Loader, Select, Surface, Table, Text, useKumoToastManager } from '@cloudflare/kumo'
+import { useCallback, useEffect, useState } from 'react'
+import { Banner, Breadcrumbs, Button, Dialog, Empty, Grid, LayerCard, Loader, Surface, Table, Text, useKumoToastManager } from '@cloudflare/kumo'
 import { InfoIcon, MoneyIcon, WarningIcon, XCircleIcon } from '@phosphor-icons/react'
 import { useParams } from 'react-router-dom'
 import { api, type Lease, type Statement } from '../api'
-import { defaultPeriod, docTypeLabel, formatDate, formatMoney, formatPeriod, periodLabel, periodsBetween, todayIso } from '../format'
-import { DateField } from '../components/DateField'
+import { docTypeLabel, formatDate, formatMoney, formatPeriod } from '../format'
+import { RegisterPaymentDialog } from '../components/RegisterPaymentDialog'
 import { StatusBadge } from '../components/StatusBadge'
 import { useErrorHandler } from '../errors'
 
@@ -26,8 +26,6 @@ export default function LeaseDetail() {
   const [payOpen, setPayOpen] = useState(false)
   const [endOpen, setEndOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [pay, setPay] = useState({ period: '', amount: '', paidOn: todayIso(), method: 'Cash' })
 
   const load = useCallback(async () => {
     try {
@@ -41,31 +39,6 @@ export default function LeaseDetail() {
   }, [id])
 
   useEffect(() => { load() }, [load])
-
-  // Solo los meses del contrato: la UI impide RN-13 (período fuera de la vigencia).
-  const periodOptions = useMemo(() => (lease ? periodsBetween(lease.startDate, lease.endDate) : []), [lease])
-  const periodItems = useMemo(() => Object.fromEntries(periodOptions.map((p) => [p, periodLabel(p)])), [periodOptions])
-  const periodValue = pay.period && periodOptions.includes(pay.period) ? pay.period : defaultPeriod(periodOptions)
-
-  async function submitPayment(e: FormEvent) {
-    e.preventDefault()
-    setBusy(true)
-    setErrors({})
-    try {
-      await api(`/leases/${id}/payments`, {
-        method: 'POST',
-        body: { period: periodValue, amount: pay.amount === '' ? 0 : Number(pay.amount), paidOn: pay.paidOn, method: pay.method },
-      })
-      toasts.add({ title: 'Pago registrado', description: `${formatMoney(Number(pay.amount))} del período ${formatPeriod(periodValue)}`, variant: 'success' })
-      setPayOpen(false)
-      setPay({ ...pay, amount: '' })
-      await load()
-    } catch (e2) {
-      setErrors(handle(e2, ['period', 'amount', 'paidOn', 'method']))
-    } finally {
-      setBusy(false)
-    }
-  }
 
   async function terminate() {
     setBusy(true)
@@ -98,7 +71,7 @@ export default function LeaseDetail() {
         </Text>
         {active ? (
           <div className="flex gap-2">
-            <Button variant="primary" icon={MoneyIcon} onClick={() => { setErrors({}); setPayOpen(true) }}>Registrar pago</Button>
+            <Button variant="primary" icon={MoneyIcon} onClick={() => setPayOpen(true)}>Registrar pago</Button>
             <Button variant="secondary-destructive" icon={XCircleIcon} onClick={() => setEndOpen(true)}>Terminar contrato</Button>
           </div>
         ) : null}
@@ -173,31 +146,7 @@ export default function LeaseDetail() {
       </LayerCard>
       )}
 
-      <Dialog.Root open={payOpen} onOpenChange={setPayOpen}>
-        <Dialog size="lg" className="px-8 py-6">
-          <Dialog.Title className="mb-6 text-xl font-semibold">Registrar pago</Dialog.Title>
-          <form onSubmit={submitPayment} className="flex flex-col gap-4" noValidate>
-            <Select className="w-full" label="Período" hideLabel={false} items={periodItems} value={periodValue} onValueChange={(v) => setPay({ ...pay, period: v as string })} error={errors.period}>
-              {periodOptions.map((p) => <Select.Option key={p} value={p}>{periodLabel(p)}</Select.Option>)}
-            </Select>
-            <InputGroup label="Monto" error={errors.amount ? { message: errors.amount, match: true } : undefined}>
-              <InputGroup.Addon>S/</InputGroup.Addon>
-              <InputGroup.Input type="number" min="0" step="0.01" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} />
-            </InputGroup>
-            <DateField label="Fecha de pago" value={pay.paidOn} onChange={(v) => setPay({ ...pay, paidOn: v })} error={errors.paidon} />
-            <Select className="w-full" label="Medio de pago" hideLabel={false} items={{ Cash: 'Efectivo', BankTransfer: 'Transferencia', Yape: 'Yape', Plin: 'Plin' }} value={pay.method} onValueChange={(v) => setPay({ ...pay, method: v as string })} error={errors.method}>
-              <Select.Option value="Cash">Efectivo</Select.Option>
-              <Select.Option value="BankTransfer">Transferencia</Select.Option>
-              <Select.Option value="Yape">Yape</Select.Option>
-              <Select.Option value="Plin">Plin</Select.Option>
-            </Select>
-            <div className="mt-2 flex justify-end gap-2">
-              <Dialog.Close render={(p) => <Button {...p} type="button" variant="secondary">Cancelar</Button>} />
-              <Button type="submit" variant="primary" loading={busy}>Registrar</Button>
-            </div>
-          </form>
-        </Dialog>
-      </Dialog.Root>
+      <RegisterPaymentDialog leaseId={lease.id} lease={lease} open={payOpen} onOpenChange={setPayOpen} onRegistered={load} />
 
       <Dialog.Root open={endOpen} onOpenChange={setEndOpen} role="alertdialog">
         <Dialog className="px-8 py-6">
