@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using FluentValidation;
@@ -42,6 +43,9 @@ public static class DependencyInjection
             .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)), publicOnly: false)
             .AsImplementedInterfaces()
             .WithScopedLifetime());
+
+        // Mensajes de validación en español, sin depender de la cultura del servidor.
+        ValidatorOptions.Global.LanguageManager.Culture = CultureInfo.GetCultureInfo("es");
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
 
