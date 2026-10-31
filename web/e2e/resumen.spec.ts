@@ -54,7 +54,7 @@ test.describe('Resumen: bandeja de cobranza (HU-07)', () => {
     expect(Number(deuda)).toBeGreaterThan(0)
     await local.getByRole('link', { name: /Local comercial A/ }).click()
     await expect(page).toHaveURL(/\/leases\/[0-9a-f-]+$/)
-    await expect(page.getByText('Días de atraso')).toBeVisible()
+    await expect(page.getByText('Días de atraso', { exact: true })).toBeVisible()
   })
 
   // HU-04 (RF-04), HU-07 (RF-07); RN-16

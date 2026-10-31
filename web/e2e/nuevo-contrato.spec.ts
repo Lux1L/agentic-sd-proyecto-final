@@ -19,7 +19,7 @@ test.describe('Nuevo contrato sobre propiedad propia', () => {
       await page.getByLabel(/número de documento/i).fill('45678912')
       await page.getByRole('button', { name: /guardar contrato/i }).click()
       await expect(page).toHaveURL(/\/leases\/[0-9a-f-]+$/)
-      await expect(page.getByText('Días de atraso')).toBeVisible()
+      await expect(page.getByText('Días de atraso', { exact: true })).toBeVisible()
     })
 
     await test.step('HU-04: el período actual queda Pendiente', async () => {
