@@ -12,11 +12,12 @@ export const formatPeriod = (p: string) => {
   const [y, m] = p.split('-')
   return `${m}/${y}`
 }
-export const todayIso = () => {
-  const d = new Date()
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
-}
+/**
+ * "Hoy" en hora de Lima (RN-18), no en la zona del navegador: la API valida las fechas
+ * de negocio con America/Lima. En-CA formatea como YYYY-MM-DD.
+ */
+export const todayIso = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(new Date())
 export const currentPeriod = () => todayIso().slice(0, 7)
 
 export const propertyTypeLabel: Record<string, string> = {
