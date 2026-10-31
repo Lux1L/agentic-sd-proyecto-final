@@ -46,6 +46,25 @@ Si algo del contrato era contradictorio o imposible, dilo explícitamente en vez
 improvisar en silencio.
 ```
 
-### Fase B · Slices en paralelo
+### Fase B · Slices en paralelo (3 agentes Sonnet, un git worktree cada uno)
 
-Se agrega al terminar la Fase A.
+Cada agente recibió el mismo esqueleto, con un alcance que **no se cruza** con el de los otros, para poder fusionar sin conflictos:
+
+| Agente | Alcance | Restricción clave del prompt |
+|---|---|---|
+| B1 · Properties | 7 slices de RF-01 + pruebas | "Para preparar un Lease en integración NO llames endpoints de Leases (otro agente los está escribiendo): inserta directo con `ApplicationDbContext`." |
+| B2 · Leases | 6 slices de RF-02..06 + el cambio de RN-15 en `LeaseStatement` + pruebas | "Usa `dateTimeProvider.Today()` SIEMPRE para 'hoy'." · "NO modifiques `BaseIntegrationTest.cs`, `IntegrationTestWebAppFactory.cs`, `Program.cs`." |
+| B3 · Portfolio + demo + arquitectura | RF-07, seeder idempotente, `FeatureIsolationTests` | "Carga propiedades, leases activos y pagos en 3 consultas (no N+1)." · "Debe fallar si alguien inyecta `ICommandHandler<OtraFeature.X.Command, ...>`." |
+
+Extracto (B2):
+
+```text
+## Cambio de dominio requerido (spec actualizada RN-15)
+En LeaseStatement.Calculate: el primer período vence en
+max(period.DueDate(paymentDay), lease.StartDate) […] Agrega tests: contrato desde
+2026-10-30 día 5, today 2026-10-30 → período 2026-10 vence 2026-10-30, Pending;
+today 2026-10-31 → Overdue 1 día.
+
+4. RecordPayment.cs — […] RN-14 suma existente del período + amount > MonthlyRent
+   → PaymentExceedsRent(remaining) (400).
+```
