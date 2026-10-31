@@ -11,7 +11,7 @@ RF → HU → CU → RN → código (slice) → endpoint → pruebas. Las prueba
 | RF-01 | HU-01 | CU-05 | RN-03 | `Properties/DeleteProperty.cs` | `DELETE /properties/{id}` | `Properties/DeletePropertyHandlerTests` |
 | RF-02 | HU-02 | CU-06 | RN-04, RN-05, RN-10 | `Leases/CreateLease.cs` | `POST /leases` | `Leases/CreateLeaseHandlerTests` · `IntegrationTests/Leases/LeasesTests` |
 | RF-02 | HU-02 | CU-06 | RN-06, RN-07, RN-08, RN-09 | `Leases/CreateLease.cs` (Validator), `Leases/TenantDocument.cs` | `POST /leases` | `Leases/CreateLeaseValidatorTests` · `Leases/TenantDocumentTests` |
-| RF-03 | HU-03 | CU-07 | — | `Leases/GetLeases.cs`, `GetLeaseById.cs` | `GET /leases[/{id}]` | `LeasesTests.GetLeases_Should_FilterByPropertyAndStatus` (escenario Gherkin de HU-03, agregado tras `/vsa-review`) |
+| RF-03 | HU-03 | CU-07 | — | `Leases/GetLeases.cs`, `GetLeaseById.cs` · UI: `web/src/pages/Leases.tsx` | `GET /leases[/{id}]` | `LeasesTests.GetLeases_Should_FilterByPropertyAndStatus` (escenario Gherkin de HU-03, agregado tras `/vsa-review`) · `web/e2e/contratos.spec.ts` |
 | RF-04 | HU-04 | CU-08 | RN-12, RN-13, RN-14 | `Leases/RecordPayment.cs` | `POST /leases/{id}/payments` | `Leases/RecordPaymentHandlerTests` · `LeasesTests` |
 | RF-05 | HU-05 | CU-09 | RN-15, RN-16, RN-17, RN-18 | `Leases/GetLeaseStatement.cs`, `Leases/LeaseStatement.cs`, `Common/LimaClock.cs` | `GET /leases/{id}/statement` | `Leases/LeaseStatementTests`, `Common/LimaClockTests` · `LeasesTests` |
 | RF-06 | HU-06 | CU-10 | RN-11 | `Leases/TerminateLease.cs` | `POST /leases/{id}/terminate` | `Leases/TerminateLeaseHandlerTests` · `LeasesTests` |

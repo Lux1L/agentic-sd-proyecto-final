@@ -14,6 +14,6 @@ export default async function globalSetup() {
   writeFileSync('.auth/token.json', JSON.stringify({ accessToken }))
   writeFileSync('.auth/state.json', JSON.stringify({
     cookies: [],
-    origins: [{ origin: 'http://localhost:5173', localStorage: [{ name: 'accessToken', value: accessToken }] }],
+    origins: [{ origin: process.env.E2E_BASE_URL ?? 'http://localhost:5173', localStorage: [{ name: 'accessToken', value: accessToken }] }],
   }))
 }
