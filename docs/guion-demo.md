@@ -5,12 +5,13 @@
 Todo lo que se cree durante los ensayos queda guardado en la base. Para volver al estado inicial:
 
 ```bash
-docker compose down
-rm -rf .containers/db          # borra solo la base local de desarrollo
-docker compose up -d
+# 1. Detén la API si está corriendo (Ctrl+C)
+./scripts/reset-demo.sh            # borra solo la base local de este repo y levanta Postgres
 dotnet run --project src/Web.Api   # migra y vuelve a cargar los datos de demo
 cd web && pnpm dev                 # http://localhost:5173
 ```
+
+> **Importante:** la suite E2E (`pnpm e2e`) crea propiedades "E2E …" en la base. Corre el reset **después** de la última corrida de E2E.
 
 Credenciales: `admin@arriendo.pe` / `Demo1234!` (ya precargadas en el login).
 
