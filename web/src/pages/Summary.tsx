@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, LayerCard, Loader, Text } from '@cloudflare/kumo'
+import { Button, Empty, LayerCard, Loader, Surface, Text } from '@cloudflare/kumo'
 import { PlusIcon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
 import { api, type PortfolioSummary } from '../api'
@@ -9,11 +9,11 @@ import { useErrorHandler } from '../errors'
 
 function Stat({ label, value, danger }: { label: string; value: string; danger?: boolean }) {
   return (
-    <div className={`rounded-lg px-5 py-4 ring ${danger ? 'ring-kumo-danger bg-kumo-danger/10' : 'ring-kumo-line bg-kumo-base'}`}>
-      <div className="text-sm text-kumo-subtle">{label}</div>
+    <Surface className={`rounded-lg px-5 py-4 ${danger ? 'ring-kumo-danger bg-kumo-danger/10' : ''}`}>
+      <Text variant="secondary">{label}</Text>
       {/* Excepción consciente a kumo-design content-text-size: KPI para demo (ver docs/ai-evidence) */}
       <div className={`mt-1.5 text-3xl font-semibold ${danger ? 'text-kumo-danger' : 'text-kumo-default'}`}>{value}</div>
-    </div>
+    </Surface>
   )
 }
 
@@ -31,13 +31,16 @@ export default function Summary() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Text as="h1" variant="heading1">Resumen</Text>
+      <Text as="h1" variant="heading" size="lg">Resumen</Text>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Stat label="Propiedades" value={String(data.totalProperties)} />
         <Stat label="Alquiladas" value={`${data.leasedProperties} de ${data.totalProperties}`} />
         <Stat label="Deuda vencida total" value={formatMoney(data.totalOverdueDebt)} danger={data.totalOverdueDebt > 0} />
       </div>
 
+      {data.properties.length === 0 ? (
+        <Empty title="Aún no hay propiedades" description="Cuando registres propiedades aparecerán aquí." />
+      ) : (
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {data.properties.map((p) => {
           const leased = !!p.leaseId
@@ -55,22 +58,22 @@ export default function Summary() {
             <LayerCard>
               <LayerCard.Secondary>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">{p.name}</span>
-                  <span className="text-sm text-kumo-subtle">{propertyTypeLabel[p.type] ?? p.type}</span>
+                  <Text bold>{p.name}</Text>
+                  <Text variant="secondary">{propertyTypeLabel[p.type] ?? p.type}</Text>
                 </div>
               </LayerCard.Secondary>
               <LayerCard.Primary>
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-kumo-strong">{leased ? p.tenantFullName : 'Sin arrendatario'}</span>
+                    <Text>{leased ? p.tenantFullName : 'Sin arrendatario'}</Text>
                     <StatusBadge status={leased ? p.currentPeriodStatus : 'Available'} />
                   </div>
                   {leased && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-kumo-subtle">Alquiler: <span className="font-medium text-kumo-default">{formatMoney(p.monthlyRent)}</span></span>
-                      <span className={p.overdueDebt > 0 ? 'font-semibold text-kumo-danger' : 'text-kumo-subtle'}>
+                      <Text variant="secondary">Alquiler: <Text as="span" bold>{formatMoney(p.monthlyRent)}</Text></Text>
+                      <Text variant={p.overdueDebt > 0 ? 'error' : 'secondary'} bold={p.overdueDebt > 0}>
                         Deuda: {formatMoney(p.overdueDebt)}
-                      </span>
+                      </Text>
                     </div>
                   )}
                   {p.status === 'Available' && (
@@ -88,6 +91,7 @@ export default function Summary() {
           )
         })}
       </div>
+      )}
     </div>
   )
 }

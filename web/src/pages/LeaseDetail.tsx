@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { Button, Dialog, Input, LayerCard, Loader, Select, Table, useKumoToastManager } from '@cloudflare/kumo'
-import { ArrowLeftIcon, MoneyIcon, XCircleIcon } from '@phosphor-icons/react'
-import { Link, useParams } from 'react-router-dom'
+import { Breadcrumbs, Button, Dialog, Empty, Input, LayerCard, Loader, Select, Surface, Table, Text, useKumoToastManager } from '@cloudflare/kumo'
+import { MoneyIcon, XCircleIcon } from '@phosphor-icons/react'
+import { useParams } from 'react-router-dom'
 import { api, type Lease, type Statement } from '../api'
 import { currentPeriod, docTypeLabel, formatDate, formatMoney, formatPeriod, todayIso } from '../format'
 import { StatusBadge } from '../components/StatusBadge'
@@ -10,8 +10,8 @@ import { useErrorHandler } from '../errors'
 function Item({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-sm text-kumo-subtle">{label}</div>
-      <div className="font-medium">{value}</div>
+      <Text variant="secondary">{label}</Text>
+      <Text bold>{value}</Text>
     </div>
   )
 }
@@ -81,20 +81,22 @@ export default function LeaseDetail() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link to="/" className="flex w-fit items-start gap-1.5 text-kumo-link no-underline">
-        <span className="h-lh flex items-center"><ArrowLeftIcon size={14} /></span> Volver al resumen
-      </Link>
+      <Breadcrumbs>
+        <Breadcrumbs.Link href="/">Resumen</Breadcrumbs.Link>
+        <Breadcrumbs.Separator />
+        <Breadcrumbs.Current>{lease.propertyName}</Breadcrumbs.Current>
+      </Breadcrumbs>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">
-          {lease.propertyName} <span className="text-kumo-subtle">· {lease.tenantFullName}</span>
-        </h1>
+        <Text as="h1" variant="heading" size="lg">
+          {lease.propertyName} <Text as="span" variant="secondary" size="lg">· {lease.tenantFullName}</Text>
+        </Text>
         {active ? (
           <div className="flex gap-2">
             <Button variant="primary" icon={MoneyIcon} onClick={() => { setErrors({}); setPayOpen(true) }}>Registrar pago</Button>
             <Button variant="secondary-destructive" icon={XCircleIcon} onClick={() => setEndOpen(true)}>Terminar contrato</Button>
           </div>
         ) : (
-          <span className="text-kumo-subtle">Contrato terminado{lease.terminatedOn ? ` el ${formatDate(lease.terminatedOn)}` : ''}</span>
+          <Text variant="secondary">Contrato terminado{lease.terminatedOn ? ` el ${formatDate(lease.terminatedOn)}` : ''}</Text>
         )}
       </div>
 
@@ -115,16 +117,19 @@ export default function LeaseDetail() {
       </LayerCard>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className={`rounded-lg px-5 py-4 ring ${st.overdueDebt > 0 ? 'ring-kumo-danger bg-kumo-danger/10' : 'ring-kumo-line bg-kumo-base'}`}>
-          <div className="text-sm text-kumo-subtle">Deuda vencida</div>
+        <Surface className={`rounded-lg px-5 py-4 ${st.overdueDebt > 0 ? 'ring-kumo-danger bg-kumo-danger/10' : ''}`}>
+          <Text variant="secondary">Deuda vencida</Text>
           <div className={`mt-1.5 text-3xl font-semibold ${st.overdueDebt > 0 ? 'text-kumo-danger' : ''}`}>{formatMoney(st.overdueDebt)}</div>
-        </div>
-        <div className="rounded-lg px-5 py-4 ring ring-kumo-line bg-kumo-base">
-          <div className="text-sm text-kumo-subtle">Saldo pendiente</div>
+        </Surface>
+        <Surface className="rounded-lg px-5 py-4">
+          <Text variant="secondary">Saldo pendiente</Text>
           <div className="mt-1.5 text-3xl font-semibold">{formatMoney(st.outstandingBalance)}</div>
-        </div>
+        </Surface>
       </div>
 
+      {st.periods.length === 0 ? (
+        <Empty title="Sin períodos" description="Este contrato aún no tiene períodos en el estado de cuenta." />
+      ) : (
       <LayerCard className="p-0">
         <Table>
           <Table.Header>
@@ -151,6 +156,7 @@ export default function LeaseDetail() {
           </Table.Body>
         </Table>
       </LayerCard>
+      )}
 
       <Dialog.Root open={payOpen} onOpenChange={setPayOpen}>
         <Dialog size="lg" className="px-8 py-6">

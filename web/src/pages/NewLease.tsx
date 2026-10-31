@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Button, Input, LayerCard, Select } from '@cloudflare/kumo'
+import { Button, Input, LayerCard, Select, Text } from '@cloudflare/kumo'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { useErrorHandler } from '../errors'
@@ -56,7 +56,7 @@ export default function NewLease() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-4 text-2xl font-semibold">Nuevo contrato</h1>
+      <div className="mb-4"><Text as="h1" variant="heading" size="lg">Nuevo contrato</Text></div>
       <LayerCard>
         <LayerCard.Secondary>Arrendatario y condiciones</LayerCard.Secondary>
         <LayerCard.Primary>
