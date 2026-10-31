@@ -84,6 +84,23 @@ public sealed class LeasesTests : BaseIntegrationTest
             $"leases/{leaseId}/payments",
             new { period, amount, paidOn = Fmt(LimaToday()), method = "Yape" });
 
+    // RNF-04: un cuerpo JSON que no se puede leer (p. ej. fecha nula) es un 400, no un 500.
+    [Fact]
+    public async Task Create_Should_ReturnBadRequest_When_BodyIsMalformed()
+    {
+        (_, AccessTokens tokens) = await RegisterAndLoginAsync();
+        Authenticate(tokens.AccessToken);
+
+        using var content = new StringContent(
+            """{ "propertyId": "00000000-0000-0000-0000-000000000001", "startDate": null }""",
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        HttpResponseMessage response = await HttpClient.PostAsync("leases", content);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
     // RN-05
     [Fact]
     public async Task Create_Should_ReturnId()

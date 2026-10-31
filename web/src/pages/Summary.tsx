@@ -42,7 +42,16 @@ export default function Summary() {
           const leased = !!p.leaseId
           const open = () => leased && navigate(`/leases/${p.leaseId}`)
           return (
-            <LayerCard key={p.propertyId}>
+            <div
+              key={p.propertyId}
+              className={leased ? 'cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-kumo-brand' : undefined}
+              onClick={open}
+              onKeyDown={(e) => { if (leased && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open() } }}
+              role={leased ? 'link' : undefined}
+              tabIndex={leased ? 0 : undefined}
+              aria-label={leased ? `Ver contrato de ${p.name}` : undefined}
+            >
+            <LayerCard>
               <LayerCard.Secondary>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{p.name}</span>
@@ -50,11 +59,7 @@ export default function Summary() {
                 </div>
               </LayerCard.Secondary>
               <LayerCard.Primary>
-                <div
-                  className={`flex flex-col gap-4 ${leased ? 'cursor-pointer' : ''}`}
-                  onClick={open}
-                  role={leased ? 'link' : undefined}
-                >
+                <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-kumo-strong">{leased ? p.tenantFullName : 'Sin arrendatario'}</span>
                     <StatusBadge status={leased ? p.currentPeriodStatus : 'Available'} />
@@ -78,6 +83,7 @@ export default function Summary() {
                 </div>
               </LayerCard.Primary>
             </LayerCard>
+            </div>
           )
         })}
       </div>

@@ -19,6 +19,14 @@ export default function NewLease() {
 
   async function submit(e: FormEvent) {
     e.preventDefault()
+    // Las fechas vacías no se pueden enviar como JSON válido: se marcan en el formulario.
+    const missing: Record<string, string> = {}
+    if (!f.startDate) missing.startdate = 'Ingresa la fecha de inicio.'
+    if (!f.endDate) missing.enddate = 'Ingresa la fecha de fin.'
+    if (Object.keys(missing).length > 0) {
+      setErrors(missing)
+      return
+    }
     setBusy(true)
     setErrors({})
     try {
@@ -31,8 +39,8 @@ export default function NewLease() {
           tenantDocumentNumber: f.tenantDocumentNumber,
           tenantPhone: f.tenantPhone,
           tenantEmail: f.tenantEmail || null,
-          startDate: f.startDate || null,
-          endDate: f.endDate || null,
+          startDate: f.startDate,
+          endDate: f.endDate,
           monthlyRent: f.monthlyRent === '' ? 0 : Number(f.monthlyRent),
           deposit: f.deposit === '' ? 0 : Number(f.deposit),
           paymentDay: f.paymentDay === '' ? 0 : Number(f.paymentDay),

@@ -11,6 +11,26 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
         Exception exception,
         CancellationToken cancellationToken)
     {
+        // Un cuerpo que no se puede leer (JSON inválido, fecha nula…) es culpa del cliente: 400, no 500.
+        if (exception is BadHttpRequestException badRequest)
+        {
+            logger.LogWarning(exception, "Bad request");
+
+            var badRequestDetails = new ProblemDetails
+            {
+                Status = badRequest.StatusCode,
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Title = "Request.Invalid",
+                Detail = "El cuerpo de la solicitud no tiene el formato esperado"
+            };
+
+            httpContext.Response.StatusCode = badRequest.StatusCode;
+
+            await httpContext.Response.WriteAsJsonAsync(badRequestDetails, cancellationToken);
+
+            return true;
+        }
+
         logger.LogError(exception, "Unhandled exception occurred");
 
         var problemDetails = new ProblemDetails
