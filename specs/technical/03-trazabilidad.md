@@ -5,13 +5,13 @@ RF → HU → CU → RN → código (slice) → endpoint → pruebas. Las prueba
 | RF | HU | CU | RN | Slice (`src/Web.Api/Features/…`) | Endpoint | Pruebas |
 |---|---|---|---|---|---|---|
 | RF-01 | HU-01 | CU-01 | RN-01 | `Properties/CreateProperty.cs` | `POST /properties` | `Properties/CreatePropertyValidatorTests` · `IntegrationTests/Properties/PropertiesTests` |
-| RF-01 | HU-01 | CU-02 | RN-01 | `Properties/UpdateProperty.cs` | `PUT /properties/{id}` | `IntegrationTests/Properties/PropertiesTests` |
+| RF-01 | HU-01 | CU-02 | RN-01 | `Properties/UpdateProperty.cs` | `PUT /properties/{id}` | `PropertiesTests.Update_Should_ChangeNameAndAddress` |
 | RF-01 | HU-01 | CU-03 | — | `Properties/GetProperties.cs`, `GetPropertyById.cs` | `GET /properties[/{id}]` | `IntegrationTests/Properties/PropertiesTests` |
 | RF-01 | HU-01 | CU-04 | RN-02 | `Properties/DeactivateProperty.cs`, `ActivateProperty.cs` | `POST /properties/{id}/deactivate\|activate` | `Properties/DeactivatePropertyHandlerTests` · `PropertiesTests` |
 | RF-01 | HU-01 | CU-05 | RN-03 | `Properties/DeleteProperty.cs` | `DELETE /properties/{id}` | `Properties/DeletePropertyHandlerTests` |
 | RF-02 | HU-02 | CU-06 | RN-04, RN-05, RN-10 | `Leases/CreateLease.cs` | `POST /leases` | `Leases/CreateLeaseHandlerTests` · `IntegrationTests/Leases/LeasesTests` |
 | RF-02 | HU-02 | CU-06 | RN-06, RN-07, RN-08, RN-09 | `Leases/CreateLease.cs` (Validator), `Leases/TenantDocument.cs` | `POST /leases` | `Leases/CreateLeaseValidatorTests` · `Leases/TenantDocumentTests` |
-| RF-03 | HU-03 | CU-07 | — | `Leases/GetLeases.cs`, `GetLeaseById.cs` | `GET /leases[/{id}]` | `IntegrationTests/Leases/LeasesTests` |
+| RF-03 | HU-03 | CU-07 | — | `Leases/GetLeases.cs`, `GetLeaseById.cs` | `GET /leases[/{id}]` | `LeasesTests.GetLeases_Should_FilterByPropertyAndStatus` (escenario Gherkin de HU-03, agregado tras `/vsa-review`) |
 | RF-04 | HU-04 | CU-08 | RN-12, RN-13, RN-14 | `Leases/RecordPayment.cs` | `POST /leases/{id}/payments` | `Leases/RecordPaymentHandlerTests` · `LeasesTests` |
 | RF-05 | HU-05 | CU-09 | RN-15, RN-16, RN-17, RN-18 | `Leases/GetLeaseStatement.cs`, `Leases/LeaseStatement.cs`, `Common/LimaClock.cs` | `GET /leases/{id}/statement` | `Leases/LeaseStatementTests`, `Common/LimaClockTests` · `LeasesTests` |
 | RF-06 | HU-06 | CU-10 | RN-11 | `Leases/TerminateLease.cs` | `POST /leases/{id}/terminate` | `Leases/TerminateLeaseHandlerTests` · `LeasesTests` |
@@ -20,7 +20,7 @@ RF → HU → CU → RN → código (slice) → endpoint → pruebas. Las prueba
 
 ## Cobertura por regla de negocio (verificada contra el código)
 
-Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-30: **133 tests** (106 unitarios, 21 de integración y 6 de arquitectura), todos en verde.
+Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-31: **144 tests** (114 unitarios, 24 de integración y 6 de arquitectura), todos en verde.
 
 | RN | Pruebas unitarias (`tests/Web.Api.UnitTests`) | Pruebas de integración (`tests/IntegrationTests`) |
 |---|---|---|
@@ -33,7 +33,7 @@ Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-30: **1
 | RN-09 | `Leases/TenantDocumentTests` (6, RUC con dígito módulo 11), `CreateLeaseValidatorTests` | — |
 | RN-10 | `Leases/CreateLeaseHandlerTests` | `LeasesTests.FullFlow_Should_TrackDebt_And_Terminate_When_Paid` |
 | RN-11 | `Leases/TerminateLeaseHandlerTests` (3) | `LeasesTests.FullFlow_Should_TrackDebt_And_Terminate_When_Paid` |
-| RN-12, RN-13, RN-14 | `Leases/RecordPaymentHandlerTests` (7) | `LeasesTests.RecordPayment_Should_ReturnBadRequest_When_ExceedsRent` |
+| RN-12, RN-13, RN-14 | `Leases/RecordPaymentHandlerTests` (7), `Leases/RecordPaymentValidatorTests` (8, RN-12) | `LeasesTests.RecordPayment_Should_ReturnBadRequest_When_ExceedsRent` |
 | RN-15 | `Leases/LeaseStatementTests` (incluye el primer período que vence en la fecha de inicio), `Leases/PeriodTests` | `LeasesTests.FullFlow_…` |
 | RN-16, RN-17 | `Leases/LeaseStatementTests` (11) | `PortfolioTests.GetSummary_Should_ReportCurrentPeriodStatusAndOverdueDebt` |
 | RN-18 | `Common/LimaClockTests.Today_Should_ConvertToLimaDate_When_UtcCrossesMidnight` | — |
