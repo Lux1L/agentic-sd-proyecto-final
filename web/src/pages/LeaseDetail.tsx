@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Breadcrumbs, Button, Dialog, Empty, Input, LayerCard, Loader, Select, Surface, Table, Text, useKumoToastManager } from '@cloudflare/kumo'
 import { MoneyIcon, XCircleIcon } from '@phosphor-icons/react'
 import { useParams } from 'react-router-dom'
 import { api, type Lease, type Statement } from '../api'
-import { currentPeriod, docTypeLabel, formatDate, formatMoney, formatPeriod, todayIso } from '../format'
+import { defaultPeriod, docTypeLabel, formatDate, formatMoney, formatPeriod, periodLabel, periodsBetween, todayIso } from '../format'
+import { DateField } from '../components/DateField'
 import { StatusBadge } from '../components/StatusBadge'
 import { useErrorHandler } from '../errors'
 
@@ -26,7 +27,7 @@ export default function LeaseDetail() {
   const [endOpen, setEndOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [pay, setPay] = useState({ period: currentPeriod(), amount: '', paidOn: todayIso(), method: 'Cash' })
+  const [pay, setPay] = useState({ period: '', amount: '', paidOn: todayIso(), method: 'Cash' })
 
   const load = useCallback(async () => {
     try {
@@ -41,6 +42,11 @@ export default function LeaseDetail() {
 
   useEffect(() => { load() }, [load])
 
+  // Solo los meses del contrato: la UI impide RN-13 (período fuera de la vigencia).
+  const periodOptions = useMemo(() => (lease ? periodsBetween(lease.startDate, lease.endDate) : []), [lease])
+  const periodItems = useMemo(() => Object.fromEntries(periodOptions.map((p) => [p, periodLabel(p)])), [periodOptions])
+  const periodValue = pay.period && periodOptions.includes(pay.period) ? pay.period : defaultPeriod(periodOptions)
+
   async function submitPayment(e: FormEvent) {
     e.preventDefault()
     setBusy(true)
@@ -48,9 +54,9 @@ export default function LeaseDetail() {
     try {
       await api(`/leases/${id}/payments`, {
         method: 'POST',
-        body: { period: pay.period, amount: pay.amount === '' ? 0 : Number(pay.amount), paidOn: pay.paidOn, method: pay.method },
+        body: { period: periodValue, amount: pay.amount === '' ? 0 : Number(pay.amount), paidOn: pay.paidOn, method: pay.method },
       })
-      toasts.add({ title: 'Pago registrado', description: `${formatMoney(Number(pay.amount))} del período ${formatPeriod(pay.period)}`, variant: 'success' })
+      toasts.add({ title: 'Pago registrado', description: `${formatMoney(Number(pay.amount))} del período ${formatPeriod(periodValue)}`, variant: 'success' })
       setPayOpen(false)
       setPay({ ...pay, amount: '' })
       await load()
@@ -162,9 +168,11 @@ export default function LeaseDetail() {
         <Dialog size="lg" className="px-8 py-6">
           <Dialog.Title className="mb-6 text-xl font-semibold">Registrar pago</Dialog.Title>
           <form onSubmit={submitPayment} className="flex flex-col gap-4" noValidate>
-            <Input label="Período" type="month" value={pay.period} onChange={(e) => setPay({ ...pay, period: e.target.value })} {...fe('period')} />
+            <Select className="w-full" label="Período" hideLabel={false} items={periodItems} value={periodValue} onValueChange={(v) => setPay({ ...pay, period: v as string })} error={errors.period}>
+              {periodOptions.map((p) => <Select.Option key={p} value={p}>{periodLabel(p)}</Select.Option>)}
+            </Select>
             <Input label="Monto (S/)" type="number" min="0" step="0.01" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} {...fe('amount')} />
-            <Input label="Fecha de pago" type="date" value={pay.paidOn} onChange={(e) => setPay({ ...pay, paidOn: e.target.value })} {...fe('paidon')} />
+            <DateField label="Fecha de pago" value={pay.paidOn} onChange={(v) => setPay({ ...pay, paidOn: v })} error={errors.paidon} />
             <Select className="w-full" label="Medio de pago" hideLabel={false} items={{ Cash: 'Efectivo', BankTransfer: 'Transferencia', Yape: 'Yape', Plin: 'Plin' }} value={pay.method} onValueChange={(v) => setPay({ ...pay, method: v as string })} error={errors.method}>
               <Select.Option value="Cash">Efectivo</Select.Option>
               <Select.Option value="BankTransfer">Transferencia</Select.Option>

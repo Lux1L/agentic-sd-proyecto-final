@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Button, Input, LayerCard, Select, Text } from '@cloudflare/kumo'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
+import { DateField } from '../components/DateField'
 import { useErrorHandler } from '../errors'
 
 export default function NewLease() {
@@ -73,8 +74,8 @@ export default function NewLease() {
             <Input label="Número de documento" value={f.tenantDocumentNumber} onChange={set('tenantDocumentNumber')} {...err('tenantDocumentNumber')} />
             <Input label="Celular" value={f.tenantPhone} onChange={set('tenantPhone')} {...err('tenantPhone')} />
             <Input label="Correo (opcional)" type="email" value={f.tenantEmail} onChange={set('tenantEmail')} {...err('tenantEmail')} />
-            <Input label="Inicio" type="date" value={f.startDate} onChange={set('startDate')} {...err('startDate')} />
-            <Input label="Fin" type="date" value={f.endDate} onChange={set('endDate')} {...err('endDate')} />
+            <DateField label="Inicio" value={f.startDate} onChange={(v) => setF({ ...f, startDate: v })} error={errors.startdate} />
+            <DateField label="Fin" value={f.endDate} onChange={(v) => setF({ ...f, endDate: v })} error={errors.enddate} />
             <Input label="Alquiler mensual (S/)" type="number" min="0" step="0.01" value={f.monthlyRent} onChange={set('monthlyRent')} {...err('monthlyRent')} />
             <Input label="Garantía (S/)" type="number" min="0" step="0.01" value={f.deposit} onChange={set('deposit')} {...err('deposit')} />
             <Input label="Día de pago (1-28)" type="number" min="1" max="28" value={f.paymentDay} onChange={set('paymentDay')} {...err('paymentDay')} />

@@ -24,4 +24,22 @@ test.describe('Detalle con deuda: errores de negocio', () => {
     await expect(page.getByText('Contrato terminado')).toHaveCount(0)
     await expect(page.getByRole('button', { name: /registrar pago/i })).toBeVisible()
   })
+
+  test('RN-13: el Select de período solo ofrece meses dentro del contrato', async ({ page }) => {
+    const vigencia = await page.getByText(/^\d{2}\/\d{2}\/\d{4} – \d{2}\/\d{2}\/\d{4}$/).textContent()
+    const [ini, fin] = vigencia!.split(' – ').map((d) => d.split('/').reverse().map(Number)) // [y, m, d]
+    const esperados: string[] = []
+    const fmt = new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' })
+    for (let y = ini[0], m = ini[1]; y < fin[0] || (y === fin[0] && m <= fin[1]); m++ > 11 && ((m = 1), y++)) {
+      esperados.push(fmt.format(new Date(y, m - 1, 1)))
+    }
+    await page.getByRole('button', { name: /registrar pago/i }).click()
+    await page.getByLabel(/^período$/i).click()
+    const opciones = (await page.getByRole('option').allTextContents()).map((t) => t.trim())
+    expect(opciones).toEqual(esperados)
+    const antes = fmt.format(new Date(ini[0], ini[1] - 2, 1))
+    const despues = fmt.format(new Date(fin[0], fin[1], 1))
+    await expect(page.getByRole('option', { name: antes, exact: true })).toHaveCount(0)
+    await expect(page.getByRole('option', { name: despues, exact: true })).toHaveCount(0)
+  })
 })

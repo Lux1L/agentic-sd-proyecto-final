@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
-import { crearPropiedad, hoyLima } from './helpers'
+import { crearPropiedad, elegirFecha, hoyLima } from './helpers'
 
 async function llenarContrato(page: Page, tipo: 'RUC' | 'DNI', doc: string) {
   await page.getByLabel(/nombre completo/i).fill('María Quispe Huamán')
@@ -7,8 +7,8 @@ async function llenarContrato(page: Page, tipo: 'RUC' | 'DNI', doc: string) {
   await page.getByRole('option', { name: new RegExp(`^${tipo}$`) }).click()
   await page.getByLabel(/número de documento/i).fill(doc)
   await page.getByLabel(/celular/i).fill('987654321')
-  await page.getByLabel(/^inicio$/i).fill(hoyLima())
-  await page.getByLabel(/^fin$/i).fill(hoyLima(1))
+  await elegirFecha(page, /^inicio:/i, hoyLima())
+  await elegirFecha(page, /^fin:/i, hoyLima(1))
   await page.getByLabel(/alquiler mensual/i).fill('1800')
   await page.getByLabel(/garantía/i).fill('3600')
   await page.getByLabel(/día de pago/i).fill('5')

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { hoyLima } from './helpers'
+import { ddmmaaaa, hoyLima } from './helpers'
 
 // RN-18: "hoy" es la fecha de Lima aunque el navegador esté en otra zona horaria.
 test.describe('Fecha de negocio en zona horaria distinta de Lima', () => {
@@ -9,6 +9,6 @@ test.describe('Fecha de negocio en zona horaria distinta de Lima', () => {
     await page.goto('/')
     await page.getByRole('link', { name: /Local comercial A/ }).click()
     await page.getByRole('button', { name: /registrar pago/i }).click()
-    await expect(page.getByLabel(/fecha de pago/i)).toHaveValue(hoyLima())
+    await expect(page.getByRole('button', { name: /fecha de pago/i })).toHaveText(ddmmaaaa(hoyLima()))
   })
 })
