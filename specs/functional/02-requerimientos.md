@@ -12,7 +12,7 @@ Cada regla de negocio (RN) indica **dónde se aplica** (validador = error 400 de
 | RF-04 | Registrar pagos (abonos) de un período de un contrato. | Alta |
 | RF-05 | Consultar el estado de cuenta de un contrato: estado por período, días de atraso y deuda. | Alta |
 | RF-06 | Terminar un contrato. | Media |
-| RF-07 | Ver el resumen de la cartera: cada propiedad con su arrendatario actual, el estado del mes en curso y la deuda vencida. | Alta |
+| RF-07 | Ver el resumen de la cartera como bandeja de cobranza: cada propiedad con su arrendatario actual, el estado del mes en curso, la deuda vencida, los períodos atrasados con sus días de atraso, y el vencimiento del mes en curso y el del mes siguiente. | Alta |
 | RF-00 | Registrarse e iniciar sesión (JWT con refresh token). Viene de la plantilla base. | Alta |
 
 ## Reglas de negocio
@@ -54,6 +54,7 @@ Cada regla de negocio (RN) indica **dónde se aplica** (validador = error 400 de
 | RN-16 | Estado de un período: **Pagado** si lo abonado ≥ alquiler; **Atrasado** si hoy > fecha de vencimiento y lo abonado < alquiler (aunque haya abonos parciales); **Parcial** si hay abonos y aún no vence; **Pendiente** si no hay abonos y aún no vence. |
 | RN-17 | Días de atraso = hoy − fecha de vencimiento (solo períodos atrasados). **Deuda vencida** = suma de los saldos de los períodos atrasados. **Saldo pendiente** = suma de los saldos de todos los períodos listados. |
 | RN-18 | "Hoy" es la fecha calendario en **America/Lima (UTC−5)**, no en UTC. Un registro hecho a las 21:00 de Lima del 5 de octubre cuenta como 5 de octubre, aunque en UTC ya sea el 6. |
+| RN-19 | Bandeja de cobranza (resumen de cartera), por cada contrato vigente: **vencimiento del período actual** = la fecha de vencimiento (RN-15) del período del mes actual, vacía si ese mes no está en el estado de cuenta; **períodos atrasados** = los períodos en estado Atrasado (RN-16), del más antiguo al más reciente; **días de atraso máximos** = los del período atrasado más antiguo (RN-17), 0 si no hay; **próximo vencimiento** = la fecha de vencimiento (RN-15) del período siguiente al mes actual, solo si ese período está dentro del contrato (entre el mes de inicio y el menor entre el mes de fin y el de terminación); si no, no hay próximo vencimiento. Sin contrato vigente: fechas vacías, sin períodos atrasados y 0 días. |
 
 ## Requerimientos no funcionales
 

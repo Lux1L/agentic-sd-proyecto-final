@@ -75,7 +75,7 @@ Base: `http://localhost:5080`. Documentación interactiva en **`/scalar/v1`** (O
 
 | Método | Ruta | Respuesta |
 |---|---|---|
-| GET | `/portfolio/summary` | `200 { today, totalProperties, leasedProperties, totalOverdueDebt, properties: [{ propertyId, name, type, status, leaseId?, tenantFullName?, currentPeriodStatus?, currentPeriodPaid?, overdueDebt }] }` — `currentPeriodPaid`: lo abonado en el período del mes actual (alimenta el Meter de la UI) |
+| GET | `/portfolio/summary` | `200 { today, totalProperties, leasedProperties, totalOverdueDebt, properties: [{ propertyId, name, type, status, leaseId?, tenantFullName?, currentPeriodStatus?, currentPeriodPaid?, overdueDebt, currentPeriodDueDate?, overduePeriods, maxDaysOverdue, nextDueDate? }] }` — `currentPeriodPaid`: lo abonado en el período del mes actual (alimenta el Meter de la UI). Bandeja de cobranza (RN-19): `currentPeriodDueDate` (`YYYY-MM-DD` o `null`): vencimiento del período del mes actual (RN-15); `overduePeriods` (`string[]`, nunca `null`): períodos `YYYY-MM` en estado Atrasado, del más antiguo al más reciente; `maxDaysOverdue` (`int`): días de atraso del período atrasado más antiguo, 0 si no hay; `nextDueDate` (`YYYY-MM-DD` o `null`): vencimiento del período siguiente al mes actual, solo si está dentro del contrato (no pasa del mes de fin ni del de terminación). Sin contrato vigente: `null`, `[]`, `0`, `null`. |
 
 ## Errores de negocio (catálogo)
 

@@ -57,7 +57,12 @@ public class FeatureIsolationTests : BaseTest
     {
         TestResult result = Types.InAssembly(WebApiAssembly)
             .That()
-            .HaveName(nameof(LeaseStatement), nameof(TenantDocument), nameof(Period), nameof(LimaClock))
+            .HaveName(
+                nameof(LeaseStatement),
+                nameof(TenantDocument),
+                nameof(Period),
+                nameof(LimaClock),
+                nameof(Web.Api.Features.Portfolio.CollectionSnapshot))
             .ShouldNot()
             .HaveDependencyOnAny("Microsoft.EntityFrameworkCore", "Microsoft.AspNetCore")
             .GetResult();

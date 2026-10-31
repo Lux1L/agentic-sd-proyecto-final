@@ -145,4 +145,12 @@ Escenario: Resumen con una propiedad atrasada
   Cuando consulto el resumen
   Entonces veo las tres con su estado del mes: Pagado, Parcial y Atrasado
   Y la deuda vencida total de la cartera es la suma de las deudas atrasadas
+
+Escenario: Bandeja de cobranza con varios meses atrasados
+  Dado un contrato con día de pago 1 que solo pagó junio y julio
+  Y hoy es 31 de octubre de 2026
+  Cuando consulto el resumen
+  Entonces veo los períodos atrasados 2026-08, 2026-09 y 2026-10
+  Y 91 días de atraso máximos
+  Y el vencimiento del mes actual es el 1 de octubre y el próximo, el 1 de noviembre
 ```
