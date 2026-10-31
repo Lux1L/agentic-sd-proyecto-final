@@ -5,6 +5,7 @@ using Serilog;
 using Web.Api;
 using Web.Api.Common.Endpoints;
 using Web.Api.Common.Extensions;
+using Web.Api.Database;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApiWithScalar();
 
     app.ApplyMigrations();
+
+    if (app.Configuration.GetValue("Seed:Enabled", true))
+    {
+        await app.SeedDevelopmentDataAsync();
+    }
 }
 
 app.MapHealthChecks("health", new HealthCheckOptions
