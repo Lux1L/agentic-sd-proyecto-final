@@ -76,7 +76,8 @@ Actor principal en todos: **Administrador familiar** (autenticado con JWT). Cada
 **Flujo principal**
 1. El administrador abre el resumen.
 2. Por cada propiedad (activas primero), el sistema muestra el tipo, el estado, el arrendatario del contrato activo (si lo hay), el estado del período actual y la deuda vencida (RN-16, RN-17).
-3. Devuelve además los totales de la cartera: propiedades, alquiladas y deuda vencida total.
+3. Para la bandeja de cobranza, agrega por cada propiedad el vencimiento del período actual, los períodos atrasados (del más antiguo al más reciente), los días de atraso máximos y el próximo vencimiento (RN-15, RN-19). Si la propiedad no tiene contrato vigente, las fechas van vacías, sin períodos atrasados y con 0 días de atraso.
+4. Devuelve además los totales de la cartera: propiedades, alquiladas y deuda vencida total.
 
 ## CU-01 a CU-05 · Propiedades (CRUD)
 

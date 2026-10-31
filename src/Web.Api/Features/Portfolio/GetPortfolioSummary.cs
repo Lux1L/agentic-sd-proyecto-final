@@ -9,7 +9,7 @@ using Web.Api.Features.Properties;
 
 namespace Web.Api.Features.Portfolio;
 
-/// <summary>CU-11: resumen de cartera (RF-07, RN-16, RN-17).</summary>
+/// <summary>CU-11: resumen de cartera como bandeja de cobranza (RF-07, RN-15..RN-17, RN-19).</summary>
 public static class GetPortfolioSummary
 {
     public sealed record Query : IQuery<Response>;
@@ -24,7 +24,11 @@ public static class GetPortfolioSummary
         decimal? MonthlyRent,
         PeriodStatus? CurrentPeriodStatus,
         decimal? CurrentPeriodPaid,
-        decimal OverdueDebt);
+        decimal OverdueDebt,
+        DateOnly? CurrentPeriodDueDate,
+        IReadOnlyList<string> OverduePeriods,
+        int MaxDaysOverdue,
+        DateOnly? NextDueDate);
 
     public sealed record Response(
         DateOnly Today,
@@ -94,11 +98,14 @@ public static class GetPortfolioSummary
         {
             if (lease is null)
             {
+                CollectionSnapshot none = CollectionSnapshot.None;
                 return new PropertySummary(
-                    property.Id, property.Name, property.Type, property.Status, null, null, null, null, null, 0m);
+                    property.Id, property.Name, property.Type, property.Status, null, null, null, null, null, 0m,
+                    none.CurrentPeriodDueDate, none.OverduePeriods, none.MaxDaysOverdue, none.NextDueDate);
             }
 
             var statement = LeaseStatement.Calculate(lease, paymentsByLease[lease.Id], today);
+            var collection = CollectionSnapshot.From(lease, statement);
 
             return new PropertySummary(
                 property.Id,
@@ -110,7 +117,11 @@ public static class GetPortfolioSummary
                 lease.MonthlyRent,
                 statement.CurrentPeriod?.Status,
                 statement.CurrentPeriod?.Paid,
-                statement.OverdueDebt);
+                statement.OverdueDebt,
+                collection.CurrentPeriodDueDate,
+                collection.OverduePeriods,
+                collection.MaxDaysOverdue,
+                collection.NextDueDate);
         }
     }
 

@@ -15,12 +15,12 @@ RF → HU → CU → RN → código (slice) → endpoint → pruebas. Las prueba
 | RF-04 | HU-04 | CU-08 | RN-12, RN-13, RN-14 | `Leases/RecordPayment.cs` | `POST /leases/{id}/payments` | `Leases/RecordPaymentHandlerTests` · `LeasesTests` |
 | RF-05 | HU-05 | CU-09 | RN-15, RN-16, RN-17, RN-18 | `Leases/GetLeaseStatement.cs`, `Leases/LeaseStatement.cs`, `Common/LimaClock.cs` | `GET /leases/{id}/statement` | `Leases/LeaseStatementTests`, `Common/LimaClockTests` · `LeasesTests` |
 | RF-06 | HU-06 | CU-10 | RN-11 | `Leases/TerminateLease.cs` | `POST /leases/{id}/terminate` | `Leases/TerminateLeaseHandlerTests` · `LeasesTests` |
-| RF-07 | HU-07 | CU-11 | RN-16, RN-17 | `Portfolio/GetPortfolioSummary.cs` | `GET /portfolio/summary` | `IntegrationTests/Portfolio/PortfolioTests` |
+| RF-07 | HU-07 | CU-11 | RN-15, RN-16, RN-17, RN-19 | `Portfolio/GetPortfolioSummary.cs`, `Portfolio/CollectionSnapshot.cs` | `GET /portfolio/summary` | `Portfolio/CollectionSnapshotTests` · `IntegrationTests/Portfolio/PortfolioTests` |
 | RNF-06 | — | — | — | Todas las features | — | `ArchitectureTests/Layers/LayerTests`, `ArchitectureTests/Layers/FeatureIsolationTests` |
 
 ## Cobertura por regla de negocio (verificada contra el código)
 
-Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-31: **144 tests** (114 unitarios, 24 de integración y 6 de arquitectura), todos en verde.
+Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-31: **157 tests** (123 unitarios, 28 de integración y 6 de arquitectura), todos en verde.
 
 | RN | Pruebas unitarias (`tests/Web.Api.UnitTests`) | Pruebas de integración (`tests/IntegrationTests`) |
 |---|---|---|
@@ -34,9 +34,10 @@ Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-31: **1
 | RN-10 | `Leases/CreateLeaseHandlerTests` | `LeasesTests.FullFlow_Should_TrackDebt_And_Terminate_When_Paid` |
 | RN-11 | `Leases/TerminateLeaseHandlerTests` (3) | `LeasesTests.FullFlow_Should_TrackDebt_And_Terminate_When_Paid` |
 | RN-12, RN-13, RN-14 | `Leases/RecordPaymentHandlerTests` (7), `Leases/RecordPaymentValidatorTests` (8, RN-12) | `LeasesTests.RecordPayment_Should_ReturnBadRequest_When_ExceedsRent` |
-| RN-15 | `Leases/LeaseStatementTests` (incluye el primer período que vence en la fecha de inicio), `Leases/PeriodTests` | `LeasesTests.FullFlow_…` |
-| RN-16, RN-17 | `Leases/LeaseStatementTests` (11) | `PortfolioTests.GetSummary_Should_ReportCurrentPeriodStatusAndOverdueDebt` |
+| RN-15 | `Leases/LeaseStatementTests` (incluye el primer período que vence en la fecha de inicio), `Leases/PeriodTests`, `Portfolio/CollectionSnapshotTests.From_Should_UseStartDateAsNextDueDate_When_LeaseStartsNextMonthAfterPaymentDay` | `LeasesTests.FullFlow_…`, `PortfolioTests.GetSummary_Should_ReportNextDueDate_When_UpToDate` |
+| RN-16, RN-17 | `Leases/LeaseStatementTests` (11), `Portfolio/CollectionSnapshotTests.From_Should_ListOverduePeriodsOldestFirst_When_SeveralMonthsUnpaid`, `From_Should_NotListCurrentPeriod_When_NotYetDue` | `PortfolioTests.GetSummary_Should_ReportCurrentPeriodStatusAndOverdueDebt`, `GetSummary_Should_ListOverduePeriods_When_SeveralMonthsUnpaid` |
 | RN-18 | `Common/LimaClockTests.Today_Should_ConvertToLimaDate_When_UtcCrossesMidnight` | — |
+| RN-19 | `Portfolio/CollectionSnapshotTests` (9: períodos atrasados del más antiguo al más reciente, días de atraso máximos, próximo vencimiento dentro del contrato, último mes del contrato, terminación, contrato que empieza después y sin contrato) | `PortfolioTests.GetSummary_Should_ListOverduePeriods_When_SeveralMonthsUnpaid`, `GetSummary_Should_ReportNextDueDate_When_UpToDate`, `GetSummary_Should_ReturnEmptyCollectionFields_When_NoActiveLease`, `GetSummary_Should_HaveNoNextDueDate_When_CurrentMonthIsLastOfLease` |
 | RNF-03 | — | `PropertiesTests.Requests_Should_ReturnUnauthorized_When_NoToken`, `PortfolioTests.GetSummary_Should_ReturnUnauthorized_WhenNoToken` |
 
 ## Pruebas de arquitectura (ADR-001)
@@ -46,7 +47,7 @@ Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-31: **1
 | `LayerTests.CommandAndQueryHandlers_Should_BeSealed`, `Endpoints_Should_BeSealed` | Convenciones de la plantilla. |
 | `FeatureIsolationTests.Features_Should_NotReferenceSliceTypesOfOtherFeatures` | Un slice no usa el Command/Handler/Endpoint de otra feature. |
 | `FeatureIsolationTests.IsolationCheck_Should_DetectCrossFeatureSliceReference` | Prueba negativa: el detector falla ante una referencia cruzada. |
-| `FeatureIsolationTests.PureDomainFunctions_Should_NotDependOnFrameworks` | `LeaseStatement`, `TenantDocument`, `Period` y `LimaClock` no dependen de EF Core ni ASP.NET (capa "Domain" lógica). |
+| `FeatureIsolationTests.PureDomainFunctions_Should_NotDependOnFrameworks` | `LeaseStatement`, `TenantDocument`, `Period`, `CollectionSnapshot` y `LimaClock` no dependen de EF Core ni ASP.NET (capa "Domain" lógica). |
 | `FeatureIsolationTests.EntityTypeConfigurations_Should_LiveInDatabaseConfigurations` | La persistencia vive en `Database/` (capa "Infrastructure" lógica). |
 
 ## Pruebas E2E en Google Chrome (`web/e2e/`, Playwright)
