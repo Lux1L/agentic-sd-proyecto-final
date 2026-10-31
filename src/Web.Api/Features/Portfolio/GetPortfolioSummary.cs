@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Web.Api.Common;
 using Web.Api.Common.Endpoints;
+using Web.Api.Common.Extensions;
 using Web.Api.Common.Messaging;
 using Web.Api.Database;
 using Web.Api.Features.Leases;
@@ -55,11 +56,11 @@ public static class GetPortfolioSummary
                 .ToListAsync(cancellationToken);
 
             ILookup<Guid, Payment> paymentsByLease = payments.ToLookup(p => p.LeaseId);
-            Dictionary<Guid, Lease> leaseByProperty = leases
+            var leaseByProperty = leases
                 .GroupBy(l => l.PropertyId)
                 .ToDictionary(g => g.Key, g => g.First());
 
-            List<PropertySummary> summaries = [.. properties
+            var summaries = properties
                 .OrderBy(p => p.Status switch
                 {
                     PropertyStatus.Leased => 0,
@@ -67,7 +68,8 @@ public static class GetPortfolioSummary
                     _ => 2
                 })
                 .ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(p => Summarize(p, leaseByProperty.GetValueOrDefault(p.Id), paymentsByLease, today))];
+                .Select(p => Summarize(p, leaseByProperty.GetValueOrDefault(p.Id), paymentsByLease, today))
+                .ToList();
 
             return new Response(
                 today,
