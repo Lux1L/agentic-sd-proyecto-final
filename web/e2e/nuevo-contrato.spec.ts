@@ -11,7 +11,8 @@ async function llenarContrato(page: Page, tipo: 'RUC' | 'DNI', doc: string) {
   await elegirFecha(page, /^fin:/i, hoyLima(1))
   await page.getByLabel(/alquiler mensual/i).fill('1800')
   await page.getByLabel(/garantía/i).fill('3600')
-  await page.getByLabel(/día de pago/i).fill('5')
+  await page.getByLabel(/día de pago/i).click()
+  await page.getByRole('option', { name: /^5$/ }).click()
 }
 
 test.describe('Nuevo contrato sobre propiedad propia', () => {

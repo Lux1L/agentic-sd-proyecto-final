@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Empty, LayerCard, Loader, Surface, Text } from '@cloudflare/kumo'
+import { Button, Empty, Grid, LayerCard, Loader, Meter, Surface, Text } from '@cloudflare/kumo'
 import { PlusIcon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
 import { api, type PortfolioSummary } from '../api'
@@ -32,16 +32,16 @@ export default function Summary() {
   return (
     <div className="flex flex-col gap-6">
       <Text as="h1" variant="heading" size="lg">Resumen</Text>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <Grid variant="3up" gap="base">
         <Stat label="Propiedades" value={String(data.totalProperties)} />
         <Stat label="Alquiladas" value={`${data.leasedProperties} de ${data.totalProperties}`} />
         <Stat label="Deuda vencida total" value={formatMoney(data.totalOverdueDebt)} danger={data.totalOverdueDebt > 0} />
-      </div>
+      </Grid>
 
       {data.properties.length === 0 ? (
         <Empty title="Aún no hay propiedades" description="Cuando registres propiedades aparecerán aquí." />
       ) : (
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <Grid variant="2up" gap="base">
         {data.properties.map((p) => {
           const leased = !!p.leaseId
           const open = () => leased && navigate(`/leases/${p.leaseId}`)
@@ -76,6 +76,13 @@ export default function Summary() {
                       </Text>
                     </div>
                   )}
+                  {leased && p.monthlyRent != null && (p.currentPeriodStatus === 'Paid' || p.currentPeriodStatus === 'Pending') && (
+                    <Meter
+                      label={`Mes actual: ${formatMoney(p.currentPeriodStatus === 'Paid' ? p.monthlyRent : 0)} de ${formatMoney(p.monthlyRent)}`}
+                      value={p.currentPeriodStatus === 'Paid' ? 100 : 0}
+                      showValue={false}
+                    />
+                  )}
                   {p.status === 'Available' && (
                     <div>
                       <Button variant="primary" icon={PlusIcon}
@@ -90,7 +97,7 @@ export default function Summary() {
             </div>
           )
         })}
-      </div>
+      </Grid>
       )}
     </div>
   )

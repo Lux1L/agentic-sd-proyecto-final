@@ -35,6 +35,7 @@ test.describe('Detalle con deuda: errores de negocio', () => {
     }
     await page.getByRole('button', { name: /registrar pago/i }).click()
     await page.getByLabel(/^período$/i).click()
+    await expect(page.getByRole('option').first()).toBeVisible()
     const opciones = (await page.getByRole('option').allTextContents()).map((t) => t.trim())
     expect(opciones).toEqual(esperados)
     const antes = fmt.format(new Date(ini[0], ini[1] - 2, 1))

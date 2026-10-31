@@ -74,5 +74,6 @@ Un agente Sonnet ejecutó la skill en **solo lectura** sobre todo lo construido 
 | E3 | Opus | "Celular" vacío se mostraba en blanco y "Correo" vacío como "—". | ✅ corregido | `2fa1ae3`. |
 | E4 | Agente E2E | El rate limit del login (10/min) cortaba la suite con 429. | ✅ resuelto en el test | `globalSetup` hace login una vez por API y reutiliza el token. No es un defecto de la app: el rate limit es intencional (RNF-03). |
 | E5 | Humano | Al probar en Chrome, el humano notó que el período y las fechas usaban el selector nativo del navegador (en inglés, sin el diseño de Kumo) | ✅ corregido | DateField = Popover + DatePicker de Kumo en español; el período pasa a Select con solo los meses del contrato (la UI impide RN-13); E2E actualizados |
+| E6 | Humano | Preguntó qué otros componentes de Kumo faltaban; Opus inventarió y propuso; el humano eligió | ✅ | Grid, Banner (terminado y deuda), InputGroup S/, Select día 1–28 (impide RN-08), Meter solo para Pagado (100%) y Pendiente (0%): el summary no trae lo abonado, así que Parcial/Atrasado quedan sin Meter hasta que la API lo exponga; SensitiveInput descartado (botón de copiar en un login) |
 
 Resultado: **11 tests E2E con Playwright sobre Google Chrome** (`channel: 'chrome'`, `locale es-PE`, `timezoneId America/Lima`), en verde en 3 corridas (2 del agente y 1 del orquestador tras las correcciones).

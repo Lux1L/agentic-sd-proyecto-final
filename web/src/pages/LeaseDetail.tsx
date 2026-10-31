@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Breadcrumbs, Button, Dialog, Empty, Input, LayerCard, Loader, Select, Surface, Table, Text, useKumoToastManager } from '@cloudflare/kumo'
-import { MoneyIcon, XCircleIcon } from '@phosphor-icons/react'
+import { Banner, Breadcrumbs, Button, Dialog, Empty, Grid, InputGroup, LayerCard, Loader, Select, Surface, Table, Text, useKumoToastManager } from '@cloudflare/kumo'
+import { InfoIcon, MoneyIcon, WarningIcon, XCircleIcon } from '@phosphor-icons/react'
 import { useParams } from 'react-router-dom'
 import { api, type Lease, type Statement } from '../api'
 import { defaultPeriod, docTypeLabel, formatDate, formatMoney, formatPeriod, periodLabel, periodsBetween, todayIso } from '../format'
@@ -83,7 +83,7 @@ export default function LeaseDetail() {
 
   if (!lease || !st) return <div className="flex justify-center p-12"><Loader size={32} /></div>
   const active = lease.status === 'Active'
-  const fe = (k: string) => ({ error: errors[k], variant: errors[k] ? ('error' as const) : ('default' as const) })
+  const overduePeriods = st.periods.filter((p) => p.status === 'Overdue').length
 
   return (
     <div className="flex flex-col gap-6">
@@ -101,15 +101,18 @@ export default function LeaseDetail() {
             <Button variant="primary" icon={MoneyIcon} onClick={() => { setErrors({}); setPayOpen(true) }}>Registrar pago</Button>
             <Button variant="secondary-destructive" icon={XCircleIcon} onClick={() => setEndOpen(true)}>Terminar contrato</Button>
           </div>
-        ) : (
-          <Text variant="secondary">Contrato terminado{lease.terminatedOn ? ` el ${formatDate(lease.terminatedOn)}` : ''}</Text>
-        )}
+        ) : null}
       </div>
+
+      {!active && (
+        <Banner icon={<InfoIcon weight="fill" />}
+          title={`Contrato terminado${lease.terminatedOn ? ` el ${formatDate(lease.terminatedOn)}` : ''}`} />
+      )}
 
       <LayerCard>
         <LayerCard.Secondary>Contrato</LayerCard.Secondary>
         <LayerCard.Primary>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <Grid variant="1-2-4up" gap="base">
             <Item label="Arrendatario" value={lease.tenantFullName} />
             <Item label="Documento" value={`${docTypeLabel[lease.tenantDocumentType] ?? lease.tenantDocumentType} ${lease.tenantDocumentNumber}`} />
             <Item label="Celular" value={lease.tenantPhone || '—'} />
@@ -118,11 +121,11 @@ export default function LeaseDetail() {
             <Item label="Alquiler mensual" value={formatMoney(lease.monthlyRent)} />
             <Item label="Garantía" value={formatMoney(lease.deposit)} />
             <Item label="Día de pago" value={String(lease.paymentDay)} />
-          </div>
+          </Grid>
         </LayerCard.Primary>
       </LayerCard>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Grid variant="2up" gap="base">
         <Surface className={`rounded-lg px-5 py-4 ${st.overdueDebt > 0 ? 'ring-kumo-danger bg-kumo-danger/10' : ''}`}>
           <Text variant="secondary">Deuda vencida</Text>
           <div className={`mt-1.5 text-3xl font-semibold ${st.overdueDebt > 0 ? 'text-kumo-danger' : ''}`}>{formatMoney(st.overdueDebt)}</div>
@@ -131,7 +134,12 @@ export default function LeaseDetail() {
           <Text variant="secondary">Saldo pendiente</Text>
           <div className="mt-1.5 text-3xl font-semibold">{formatMoney(st.outstandingBalance)}</div>
         </Surface>
-      </div>
+      </Grid>
+
+      {active && st.overdueDebt > 0 && (
+        <Banner variant="error" icon={<WarningIcon weight="fill" />}
+          title={`Este contrato tiene ${formatMoney(st.overdueDebt)} vencidos en ${overduePeriods} ${overduePeriods === 1 ? 'período' : 'períodos'}`} />
+      )}
 
       {st.periods.length === 0 ? (
         <Empty title="Sin períodos" description="Este contrato aún no tiene períodos en el estado de cuenta." />
@@ -171,7 +179,10 @@ export default function LeaseDetail() {
             <Select className="w-full" label="Período" hideLabel={false} items={periodItems} value={periodValue} onValueChange={(v) => setPay({ ...pay, period: v as string })} error={errors.period}>
               {periodOptions.map((p) => <Select.Option key={p} value={p}>{periodLabel(p)}</Select.Option>)}
             </Select>
-            <Input label="Monto (S/)" type="number" min="0" step="0.01" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} {...fe('amount')} />
+            <InputGroup label="Monto" error={errors.amount ? { message: errors.amount, match: true } : undefined}>
+              <InputGroup.Addon>S/</InputGroup.Addon>
+              <InputGroup.Input type="number" min="0" step="0.01" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} />
+            </InputGroup>
             <DateField label="Fecha de pago" value={pay.paidOn} onChange={(v) => setPay({ ...pay, paidOn: v })} error={errors.paidon} />
             <Select className="w-full" label="Medio de pago" hideLabel={false} items={{ Cash: 'Efectivo', BankTransfer: 'Transferencia', Yape: 'Yape', Plin: 'Plin' }} value={pay.method} onValueChange={(v) => setPay({ ...pay, method: v as string })} error={errors.method}>
               <Select.Option value="Cash">Efectivo</Select.Option>
