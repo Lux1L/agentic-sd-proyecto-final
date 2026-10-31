@@ -67,5 +67,6 @@ internal static class ValidationDecorator
     }
 
     private static ValidationError CreateValidationError(ValidationFailure[] validationFailures) =>
-        new([.. validationFailures.Select(f => Error.Problem(f.ErrorCode, f.ErrorMessage))]);
+        // El código del error es el nombre de la propiedad: CustomResults agrupa por campo (RNF-04).
+        new([.. validationFailures.Select(f => Error.Problem(f.PropertyName, f.ErrorMessage))]);
 }

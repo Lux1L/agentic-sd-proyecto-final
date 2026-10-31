@@ -76,6 +76,11 @@ public sealed class PropertiesTests : BaseIntegrationTest
             new { name = string.Empty, address = "Av. Lima 123", type = "House" });
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        // RNF-04: los errores de validación vienen agrupados por campo (camelCase), como dice el contrato de la API.
+        using var problem = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        System.Text.Json.JsonElement errors = problem.RootElement.GetProperty("errors");
+        errors.GetProperty("name").GetArrayLength().ShouldBeGreaterThan(0);
     }
 
     // RN-01

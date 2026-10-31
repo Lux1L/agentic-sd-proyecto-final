@@ -1,4 +1,5 @@
-﻿using Web.Api.Common;
+﻿using System.Text.Json;
+using Web.Api.Common;
 
 namespace Web.Api.Common;
 
@@ -64,9 +65,14 @@ public static class CustomResults
                 return null;
             }
 
+            // { campo: [mensajes] } con el campo en camelCase, igual que el JSON del cuerpo.
+            var errorsByField = validationError.Errors
+                .GroupBy(e => JsonNamingPolicy.CamelCase.ConvertName(e.Code))
+                .ToDictionary(g => g.Key, g => g.Select(e => e.Description).ToArray());
+
             return new Dictionary<string, object?>
             {
-                { "errors", validationError.Errors }
+                { "errors", errorsByField }
             };
         }
     }
