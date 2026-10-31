@@ -49,6 +49,7 @@ Los datos de demo incluyen 4 propiedades: una al día, una con abono parcial, un
 
 ```bash
 dotnet test ArriendoFamiliar.slnx   # requiere Docker en ejecución (Testcontainers)
+cd web && pnpm e2e                  # E2E Playwright; requiere API (5080) + Vite (5173) corriendo; usa Google Chrome instalado
 ```
 
 - **Unitarias**: cada regla de negocio (RN-xx) tiene su prueba, con un comentario `// RN-xx`.
