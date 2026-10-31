@@ -28,5 +28,9 @@ RUN dotnet publish "./Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
+# La imagen de aspnet no trae curl ni wget: wget estático de busybox para el healthcheck.
+COPY --from=busybox:1.37-musl /bin/wget /usr/local/bin/wget
 COPY --from=publish /app/publish .
+USER $APP_UID
+HEALTHCHECK --interval=10s --timeout=3s --retries=10 CMD ["wget", "-q", "--spider", "http://127.0.0.1:8080/health"]
 ENTRYPOINT ["dotnet", "Web.Api.dll"]

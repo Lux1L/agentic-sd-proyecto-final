@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Web.Api.Authentication;
 using Web.Api.Authorization;
 using Web.Api.Common;
@@ -92,7 +93,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        string? connectionString = configuration.GetConnectionString("Database");
+        string? connectionString = GetDatabaseConnectionString(configuration);
 
         services.AddDbContext<ApplicationDbContext>(
             options => options
@@ -107,9 +108,20 @@ public static class DependencyInjection
     {
         services
             .AddHealthChecks()
-            .AddNpgSql(configuration.GetConnectionString("Database")!);
+            .AddNpgSql(GetDatabaseConnectionString(configuration)!);
 
         return services;
+    }
+
+    // En Docker la contraseña llega como secret (Database:Password), no dentro de la connection string.
+    private static string? GetDatabaseConnectionString(IConfiguration configuration)
+    {
+        string? connectionString = configuration.GetConnectionString("Database");
+        string? password = configuration["Database:Password"];
+
+        return string.IsNullOrEmpty(password)
+            ? connectionString
+            : new NpgsqlConnectionStringBuilder(connectionString) { Password = password }.ConnectionString;
     }
 
     private static IServiceCollection AddAuthenticationInternal(
