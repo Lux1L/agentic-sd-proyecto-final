@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, LayerCard, Loader } from '@cloudflare/kumo'
+import { Button, LayerCard, Loader, Text } from '@cloudflare/kumo'
 import { PlusIcon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
 import { api, type PortfolioSummary } from '../api'
@@ -9,9 +9,9 @@ import { useErrorHandler } from '../errors'
 
 function Stat({ label, value, danger }: { label: string; value: string; danger?: boolean }) {
   return (
-    <div className={`rounded-lg border p-5 ${danger ? 'border-kumo-danger bg-kumo-danger/10' : 'border-kumo-line bg-kumo-base'}`}>
+    <div className={`rounded-lg px-5 py-4 ring ${danger ? 'ring-kumo-danger bg-kumo-danger/10' : 'ring-kumo-line bg-kumo-base'}`}>
       <div className="text-sm text-kumo-subtle">{label}</div>
-      <div className={`mt-1 text-3xl font-semibold ${danger ? 'text-kumo-danger' : 'text-kumo-default'}`}>{value}</div>
+      <div className={`mt-1.5 text-3xl font-semibold ${danger ? 'text-kumo-danger' : 'text-kumo-default'}`}>{value}</div>
     </div>
   )
 }
@@ -30,7 +30,7 @@ export default function Summary() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Resumen</h1>
+      <Text as="h1" variant="heading1">Resumen</Text>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Stat label="Propiedades" value={String(data.totalProperties)} />
         <Stat label="Alquiladas" value={`${data.leasedProperties} de ${data.totalProperties}`} />
@@ -51,7 +51,7 @@ export default function Summary() {
               </LayerCard.Secondary>
               <LayerCard.Primary>
                 <div
-                  className={`flex flex-col gap-3 ${leased ? 'cursor-pointer' : ''}`}
+                  className={`flex flex-col gap-4 ${leased ? 'cursor-pointer' : ''}`}
                   onClick={open}
                   role={leased ? 'link' : undefined}
                 >
@@ -61,7 +61,7 @@ export default function Summary() {
                   </div>
                   {leased && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-kumo-subtle">Alquiler: <b className="text-kumo-default">{formatMoney(p.monthlyRent)}</b></span>
+                      <span className="text-kumo-subtle">Alquiler: <span className="font-medium text-kumo-default">{formatMoney(p.monthlyRent)}</span></span>
                       <span className={p.overdueDebt > 0 ? 'font-semibold text-kumo-danger' : 'text-kumo-subtle'}>
                         Deuda: {formatMoney(p.overdueDebt)}
                       </span>

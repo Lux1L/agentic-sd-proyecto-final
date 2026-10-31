@@ -55,7 +55,7 @@ export default function LeaseDetail() {
       setPay({ ...pay, amount: '' })
       await load()
     } catch (e2) {
-      setErrors(handle(e2))
+      setErrors(handle(e2, ['period', 'amount', 'paidOn', 'method']))
     } finally {
       setBusy(false)
     }
@@ -115,13 +115,13 @@ export default function LeaseDetail() {
       </LayerCard>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className={`rounded-lg border p-5 ${st.overdueDebt > 0 ? 'border-kumo-danger bg-kumo-danger/10' : 'border-kumo-line bg-kumo-base'}`}>
+        <div className={`rounded-lg px-5 py-4 ring ${st.overdueDebt > 0 ? 'ring-kumo-danger bg-kumo-danger/10' : 'ring-kumo-line bg-kumo-base'}`}>
           <div className="text-sm text-kumo-subtle">Deuda vencida</div>
-          <div className={`text-3xl font-semibold ${st.overdueDebt > 0 ? 'text-kumo-danger' : ''}`}>{formatMoney(st.overdueDebt)}</div>
+          <div className={`mt-1.5 text-3xl font-semibold ${st.overdueDebt > 0 ? 'text-kumo-danger' : ''}`}>{formatMoney(st.overdueDebt)}</div>
         </div>
-        <div className="rounded-lg border border-kumo-line bg-kumo-base p-5">
+        <div className="rounded-lg px-5 py-4 ring ring-kumo-line bg-kumo-base">
           <div className="text-sm text-kumo-subtle">Saldo pendiente</div>
-          <div className="text-3xl font-semibold">{formatMoney(st.outstandingBalance)}</div>
+          <div className="mt-1.5 text-3xl font-semibold">{formatMoney(st.outstandingBalance)}</div>
         </div>
       </div>
 
@@ -154,7 +154,7 @@ export default function LeaseDetail() {
 
       <Dialog.Root open={payOpen} onOpenChange={setPayOpen}>
         <Dialog size="lg" className="p-8">
-          <Dialog.Title className="mb-4 text-xl font-semibold">Registrar pago</Dialog.Title>
+          <Dialog.Title className="mb-6 text-xl font-semibold">Registrar pago</Dialog.Title>
           <form onSubmit={submitPayment} className="flex flex-col gap-4" noValidate>
             <Input label="Período" type="month" value={pay.period} onChange={(e) => setPay({ ...pay, period: e.target.value })} {...fe('period')} />
             <Input label="Monto (S/)" type="number" min="0" step="0.01" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} {...fe('amount')} />
@@ -175,7 +175,7 @@ export default function LeaseDetail() {
 
       <Dialog.Root open={endOpen} onOpenChange={setEndOpen} role="alertdialog">
         <Dialog className="p-8">
-          <Dialog.Title className="mb-2 text-xl font-semibold">¿Terminar contrato?</Dialog.Title>
+          <Dialog.Title className="mb-1.5 text-xl font-semibold">¿Terminar contrato?</Dialog.Title>
           <Dialog.Description className="text-kumo-subtle">
             Se terminará el contrato de {lease.tenantFullName} en {lease.propertyName}. La propiedad quedará disponible. Esta acción no se puede deshacer.
           </Dialog.Description>

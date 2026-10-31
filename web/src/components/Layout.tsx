@@ -26,7 +26,7 @@ export function Layout() {
           </Button>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 text-base">
+      <main className="mx-auto max-w-6xl px-4 py-6 text-sm">
         <Outlet />
       </main>
     </div>

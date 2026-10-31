@@ -40,7 +40,7 @@ export default function NewLease() {
       })
       navigate(`/leases/${leaseId}`)
     } catch (e2) {
-      setErrors(handle(e2))
+      setErrors(handle(e2, Object.keys(f)))
     } finally {
       setBusy(false)
     }

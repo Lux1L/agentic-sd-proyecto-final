@@ -1,17 +1,21 @@
 import { useKumoToastManager } from '@cloudflare/kumo'
 import { ApiError, parseValidation } from './api'
 
-/** Devuelve un manejador: los errores de negocio van a toast; los de validación se devuelven por campo. */
+/**
+ * Devuelve un manejador de errores. Los de negocio (title/detail) van a un toast;
+ * los de validación se devuelven por campo (clave en minúsculas) y las claves que no
+ * corresponden a un campo del formulario (`known`) también van al toast.
+ */
 export function useErrorHandler() {
   const toasts = useKumoToastManager()
-  return (err: unknown): Record<string, string> => {
-    const { fields, unmapped } = parseValidation(err)
-    if (Object.keys(fields).length > 0 && unmapped.length === 0) return fields
+  return (err: unknown, known: string[] = []): Record<string, string> => {
+    const { fields, unmapped } = parseValidation(err, known)
     const e = err instanceof ApiError ? err : null
-    const isValidation = unmapped.length > 0 || Object.keys(fields).length > 0
+    const hasValidation = !!e && Object.keys(e.errors ?? {}).length > 0
+    if (hasValidation && unmapped.length === 0) return fields
     toasts.add({
-      title: isValidation ? 'Revisa los datos' : (e?.code ?? 'Error'),
-      description: unmapped.length > 0 ? unmapped.join(' ') : (e?.detail ?? 'No se pudo completar la operación.'),
+      title: hasValidation ? 'Revisa los datos' : (e?.code ?? 'Error'),
+      description: hasValidation ? unmapped.join(' ') : (e?.detail ?? 'No se pudo completar la operación.'),
       variant: 'error',
     })
     return fields

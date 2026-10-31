@@ -4,15 +4,13 @@ export const getToken = () => localStorage.getItem(TOKEN_KEY)
 export const setToken = (t: string) => localStorage.setItem(TOKEN_KEY, t)
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY)
 
-export interface ValidationItem { code?: string; description: string }
-
 export class ApiError extends Error {
   status: number
   code: string
   detail: string
-  /** Mapa { Campo: [mensajes] } (contrato) o lista [{ code, description }] (lo que devuelve la API real). */
-  errors: Record<string, string[]> | ValidationItem[]
-  constructor(status: number, code: string, detail: string, errors: Record<string, string[]> | ValidationItem[]) {
+  /** Errores de validación: { campo: [mensajes] } con el campo en camelCase. */
+  errors: Record<string, string[]>
+  constructor(status: number, code: string, detail: string, errors: Record<string, string[]>) {
     super(detail || code)
     this.status = status
     this.code = code
@@ -48,40 +46,22 @@ export async function api<T = unknown>(
       res.status,
       data?.title ?? 'Error',
       data?.detail ?? 'Ocurrió un error inesperado.',
-      data?.errors ?? [],
+      data?.errors ?? {},
     )
   }
   return data as T
 }
 
-// La API real devuelve la lista de errores sin nombre de campo: se infiere por el texto del mensaje.
-const hints: [RegExp, string][] = [
-  [/número de documento/i, 'tenantdocumentnumber'],
-  [/teléfono/i, 'tenantphone'],
-  [/fecha de fin/i, 'enddate'],
-  [/garantía/i, 'deposit'],
-  [/período/i, 'period'],
-]
-function inferField(msg: string): string | null {
-  for (const [re, f] of hints) if (re.test(msg)) return f
-  const q = msg.match(/^'([^']+)'/) // FluentValidation: 'Tenant Full Name' must not be empty.
-  return q ? q[1].replace(/\s+/g, '').toLowerCase() : null
-}
-
-/** Errores de validación por campo (claves en minúsculas) y los mensajes que no se pudieron asignar a un campo. */
-export function parseValidation(err: unknown): { fields: Record<string, string>; unmapped: string[] } {
+/** Errores de validación por clave (en minúsculas). Solo se consideran los campos conocidos del formulario. */
+export function parseValidation(err: unknown, known: string[]): { fields: Record<string, string>; unmapped: string[] } {
   const fields: Record<string, string> = {}
   const unmapped: string[] = []
   if (!(err instanceof ApiError)) return { fields, unmapped }
-  const add = (k: string, m: string) => { fields[k] = fields[k] ? `${fields[k]} ${m}` : m }
-  if (Array.isArray(err.errors)) {
-    for (const e of err.errors) {
-      const f = inferField(e.description)
-      if (f) add(f, e.description)
-      else unmapped.push(e.description)
-    }
-  } else {
-    for (const [k, v] of Object.entries(err.errors ?? {})) add((k.split('.').pop() ?? k).toLowerCase(), v.join(' '))
+  const knownLower = known.map((k) => k.toLowerCase())
+  for (const [k, v] of Object.entries(err.errors ?? {})) {
+    const key = k.toLowerCase()
+    if (knownLower.includes(key)) fields[key] = v.join(' ')
+    else unmapped.push(...v)
   }
   return { fields, unmapped }
 }

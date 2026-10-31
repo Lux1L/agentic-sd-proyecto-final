@@ -20,7 +20,7 @@ export default function Login() {
       setToken(r.accessToken)
       navigate('/', { replace: true })
     } catch (err) {
-      setErrors(handle(err))
+      setErrors(handle(err, ['email', 'password']))
     } finally {
       setBusy(false)
     }
