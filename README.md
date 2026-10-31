@@ -18,7 +18,7 @@ La familia que alquila 2 a 6 unidades lleva los contratos en papel y los pagos e
 | Seguridad | JWT con refresh tokens y rate limiting en la autenticación |
 | Documentación de la API | OpenAPI + Scalar (`/scalar/v1`) |
 | Pruebas | xUnit, Shouldly, NSubstitute, Testcontainers (PostgreSQL real), NetArchTest |
-| Frontend | Vite + React + TypeScript + shadcn/ui (`web/`) |
+| Frontend | Vite + React + TypeScript + Tailwind v4 + **Kumo** (`@cloudflare/kumo`) en `web/` ([ADR-005](docs/adr/ADR-005-frontend-kumo.md)) |
 
 ## Cómo ejecutarlo
 
@@ -73,7 +73,7 @@ dotnet test ArriendoFamiliar.slnx   # requiere Docker en ejecución (Testcontain
 ├── docs/
 │   ├── adr/                     Decisiones de arquitectura
 │   └── ai-evidence/             Plan, prompts y registro de revisión humana
-├── web/                         Frontend (Vite + shadcn)
+├── web/                         Frontend (Vite + React + Kumo)
 ├── .claude/skills/              Skills de Claude Code con las convenciones del repo
 └── docker-compose.yml
 ```

@@ -12,6 +12,7 @@ Leyenda: ✅ aceptada · ✏️ corregida por el humano · ❌ rechazada · 🔍
 | P4 | El humano propuso reutilizar el contenedor Postgres 18.6 existente. | ✏️ | La IA lo inspeccionó: pertenece a un AppHost de Aspire de otro proyecto, con puerto y contraseña aleatorios. Se acordó usar la misma imagen en un contenedor propio en `docker-compose.yml`. Ver ADR-002. |
 | P5 | Construir el frontend durante la noche, con un tope de 75 min. | ✏️ | El humano decidió que el frontend va **al final**. La rúbrica no le asigna puntaje. |
 | P6 | El humano pidió quitar las referencias al autor de la plantilla base. | ✅ con matiz | Se quitaron (2 líneas en los README; no había archivo LICENSE). La IA recomendó **no ocultar** que se partió de una plantilla, y ADR-001 lo declara sin nombrar al autor: "plantilla base VSA, adaptada". |
+| P8 | La IA lanzó el frontend con shadcn/ui (según el plan aprobado). | ✏️ | El humano lo detuvo y pidió **Kumo** (`@cloudflare/kumo`). La IA leyó primero la guía de instalación (Tailwind v4, orden de imports CSS, `Toasty`, no hay AlertDialog) para no adivinar la configuración. Se descartó el esqueleto a medias, que no estaba commiteado. Ver ADR-005. |
 | P7 | El humano pidió ejecutar con agentes Sonnet y que Opus orqueste. | ✅ | Fase A (dominio base, secuencial), luego Fase B con 3 agentes en paralelo en worktrees y Fase C (frontend). Opus revisa cada diff antes de integrarlo. |
 
 ## Bootstrap e infraestructura
