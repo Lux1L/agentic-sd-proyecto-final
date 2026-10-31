@@ -28,6 +28,7 @@ Las fechas de los datos de demo se calculan desde "hoy" en hora de Lima, así qu
 | 5 | Volver → **Casa Chorrillos → Nuevo contrato**, tipo RUC `20601234560` | Error en español debajo de "Número de documento" | RN-09 (módulo 11) |
 | 6 | Cambiar a DNI `45678912`, inicio = hoy, fin = +1 año, alquiler 1800, garantía 3600, día 5 → Guardar | Detalle del contrato; el período actual vence hoy y queda **Pendiente** | RN-15 |
 | 7 | Registrar un abono de S/ 800 | El período pasa a **Parcial** | RN-16 |
+| 7b | Menú **Contratos** → filtro "Terminados" y buscar "Rímac" | Tabla paginada con filtros (Kumo `Table` + `Pagination`) | RF-03 / HU-03 |
 | 8 | Abrir http://localhost:5080/scalar/v1 | 14 rutas documentadas en OpenAPI; probar `GET /portfolio/summary` | RNF-01 |
 
 ## Si algo falla en vivo

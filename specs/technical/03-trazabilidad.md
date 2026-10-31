@@ -48,3 +48,18 @@ Generada a partir de los comentarios `// RN-xx` de cada test. Al 2026-10-31: **1
 | `FeatureIsolationTests.IsolationCheck_Should_DetectCrossFeatureSliceReference` | Prueba negativa: el detector falla ante una referencia cruzada. |
 | `FeatureIsolationTests.PureDomainFunctions_Should_NotDependOnFrameworks` | `LeaseStatement`, `TenantDocument`, `Period` y `LimaClock` no dependen de EF Core ni ASP.NET (capa "Domain" lógica). |
 | `FeatureIsolationTests.EntityTypeConfigurations_Should_LiveInDatabaseConfigurations` | La persistencia vive en `Database/` (capa "Infrastructure" lógica). |
+
+## Pruebas E2E en Google Chrome (`web/e2e/`, Playwright)
+
+Se corren con `cd web && pnpm e2e` (con la API y Vite levantados). Son 19 tests sobre el Chrome instalado, con `locale es-PE` y `timezoneId America/Lima`. Cada spec que muta datos crea su propia propiedad por API.
+
+| Spec | Tests | HU / RF | RN |
+|---|---|---|---|
+| `login.spec.ts` | 2 | RF-00 | RNF-03 (credenciales inválidas: mensaje genérico en español) |
+| `sesion.spec.ts` | 2 | RF-00 | RNF-03 (sin token → /login) |
+| `resumen.spec.ts` | 2 | HU-07 (RF-07) | RN-16, RN-17 |
+| `banner-deuda.spec.ts` | 2 | HU-05 (RF-05), HU-02 (RF-02) | RN-17 (deuda vencida), RN-08 (día de pago 1–28) |
+| `detalle-errores.spec.ts` | 3 | HU-04 (RF-04), HU-06 (RF-06) | RN-14 (sobrepago), RN-11 (terminar con deuda), RN-13 (período dentro del contrato) |
+| `nuevo-contrato.spec.ts` | 1 (flujo completo) | HU-02, HU-04, HU-05 | RN-09 (RUC módulo 11), RN-15, RN-16 (Parcial), RN-05 (solapamiento) |
+| `fecha-lima.spec.ts` | 1 | HU-04 | RN-18 (corre en `Asia/Tokyo`: la fecha por defecto debe ser la de Lima) |
+| `contratos.spec.ts` | 6 | HU-03 (RF-03) | Filtro por estado, búsqueda, estado vacío, navegación y paginación |

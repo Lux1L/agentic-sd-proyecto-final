@@ -85,3 +85,12 @@ Resultado: **11 tests E2E con Playwright sobre Google Chrome** (`channel: 'chrom
 |---|---|---|---|---|
 | S1 | Humano | “Al FE le falta skills, ¿qué opinas?” | ✅ | Opus coincidió y lo fundamentó: a cada agente de frontend se le repetían a mano las mismas convenciones (fecha de Lima, `Select` con `items`, `DateField`, errores por clave, rate limit en E2E), y dos defectos (E1 y los selects con valores crudos) pasaron porque eso no estaba escrito. Propuso **solo 2 skills sacadas de lo que se repitió de verdad**, no un set especulativo. |
 | S2 | 2 agentes Sonnet en paralelo | `/add-page` (98 líneas + ejemplos) y `/add-e2e` (78 líneas + controles), cada regla trazada a un defecto (E1, E3, E4, E5, I12, I14–I16). | ✏️ | Opus revisó `/add-page`: agregó la fila de `Meter` con la regla de no inventar datos (E7) y corrigió el formato real de `periodLabel`. Además se agregó la sección “Frontend” a `CLAUDE.md` con 5 reglas duras. |
+
+## Integración final y estabilidad de la suite
+
+| # | Origen | Hallazgo | Resultado | Detalle |
+|---|---|---|---|---|
+| F1 | Agente K2 + Opus | Pantalla de Contratos (RF-03) revisada **contra la skill `/add-page`**: pasó los 14 puntos del checklist. | ✅ | Primera validación de la skill con código real. Merge `5e64a20`. |
+| F2 | Agente de cierre (Sonnet) | Inestabilidad E2E: fallos intermitentes cuando dos suites corrían a la vez o una tras otra. Diagnóstico: 429 del rate limit global. | ✏️ | El agente lo describió como una "ventana global compartida". **Opus lo corrigió leyendo el código:** el límite **sí está particionado** por usuario/IP, que es el diseño correcto. El problema es que todas las corridas usan el mismo admin y caen en la misma partición. Se subió `RateLimiting:Global:PermitLimit` **solo en Development** (igual que hacen los tests de integración). El límite de autenticación (10/min, contra fuerza bruta) quedó igual. Verificación: 2 corridas seguidas sin pausa, 19/19 cada una. |
+| F3 | Agente de cierre | Otros arreglos de la suite: el test de "Terminados" matcheaba el trigger del filtro; esperas con `allTextContents()` sin reintento; asserts solo sobre el código en inglés del error. | ✅ | `expect.poll`, `toHaveText([...])`, asserts también sobre el `detail` en español, y trazabilidad `// HU/RN/RNF` en los 19 tests. |
+| F4 | Opus | Los conteos de E2E estaban desactualizados en esta evidencia (I17 decía 10 y E1–E4 decía 11). | ✅ | **Conteo final verificado: 19 tests E2E** en 8 specs (ver `specs/technical/03-trazabilidad.md`). Backend: 144 (114 unitarios, 24 de integración, 6 de arquitectura). |
