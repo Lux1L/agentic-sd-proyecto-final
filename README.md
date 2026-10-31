@@ -95,7 +95,7 @@ Se usó **Claude Code**: Opus como orquestador y agentes Sonnet como ejecutores 
 
 ## Mejoras pendientes
 
-Reajuste anual del alquiler · recordatorios por email/WhatsApp · portal del arrendatario y roles · adelanto y devolución de garantía · prorrateo de meses incompletos · adjuntar el contrato en PDF.
+Bloqueo optimista en el registro de pagos concurrentes · reajuste anual del alquiler · recordatorios por email/WhatsApp · portal del arrendatario y roles · adelanto y devolución de garantía · prorrateo de meses incompletos · adjuntar el contrato en PDF.
 
 ## Origen
 
