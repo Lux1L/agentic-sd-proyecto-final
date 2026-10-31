@@ -12,6 +12,12 @@ Sistema de administración de alquileres para una familia en **Perú** (soles S/
 - Endpoints de negocio: `.RequireAuthorization()` (un solo actor, el administrador familiar; `PermissionProvider` no asigna permisos).
 - Encima de cada test, un comentario `// RN-xx` con la regla que cubre (alimenta `specs/technical/03-trazabilidad.md`).
 - Commits en español, conventional, con el prefijo del RF: `feat(RF-04): ...`.
+- Los `.cs` de la plantilla usan **CRLF**: edítalos con Edit, nunca los reescribas desde un script.
+
+### Excepciones deliberadas a la skill `/vsa-review`
+
+- **Sin eventos de dominio (`Raise`) en los commands.** Ninguna spec los pide y no hay handlers que los consuman. Se agregan cuando exista un consumidor real (por ejemplo, los recordatorios de pago, una mejora pendiente).
+- **Los errores de validación usan como código el nombre de la propiedad**, no `{Feature}.{Motivo}`, porque `CustomResults` los agrupa por campo (`{ campo: [mensajes] }`, RNF-04). Los errores de negocio sí usan `{Feature}.{Motivo}`.
 
 ## Estructura (un solo proyecto)
 

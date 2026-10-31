@@ -47,3 +47,19 @@ Leyenda: ✅ aceptada · ✏️ corregida por el humano · ❌ rechazada · 🔍
 | I14 | Orquestador | 🔍 Verificación visual del frontend en Chrome headless (la extensión de Chrome no estaba conectada): recorrido completo de la demo con capturas. | ✏️ | Se encontraron 3 defectos que build/lint no detectan: (1) **500** ante un JSON inválido (`BadHttpRequestException` → `GlobalExceptionHandler`): ahora 400, con un test de integración que primero falló; (2) el formulario enviaba `startDate: null`: ahora valida las fechas en el cliente; (3) solo media tarjeta del resumen era clickeable y no respondía al teclado: ahora la tarjeta completa es el enlace. |
 | I15 | Auditoría kumo-design · Sonnet | Auditó el frontend contra las 15 reglas de `kumo-design`: grep del orquestador más lectura de cada `.tsx` y verificación visual con capturas (01–08). | ✏️ | Corregido: `text-spacing` (dialogs con `px-8 py-6`), `icon-alignment` (icono del logo a 20px y flecha de "Volver" con `h-lh`), y un bug: los Select mostraban el valor crudo ("Ruc", "Cash") y ahora usan `items` para mostrar "RUC"/"Efectivo". Los Select también ocupan todo el ancho de su celda. **Excepción consciente:** los montos KPI en `text-3xl` se mantienen (`content-text-size`) por legibilidad en proyector durante la demo; quedó un comentario en `Summary.tsx`. |
 | I16 | Humano + Sonnet | El humano preguntó si se usaban los componentes de Kumo; la auditoría encontró HTML crudo (títulos, spans, enlaces, KPI) | ✏️ | Títulos h1 y spans → `Text`; enlace "Volver" → `Breadcrumbs` (Resumen › propiedad) y logo → `Link` de Kumo, ambos conectados al router con `LinkProvider`; tarjetas KPI → `Surface` (monto `text-3xl` conservado); listas vacías → `Empty`. `DatePicker` descartado a propósito (riesgo en la demo, sin valor de rúbrica). |
+
+## Revisión con `/vsa-review` (skill del repo)
+
+Un agente Sonnet ejecutó la skill en **solo lectura** sobre todo lo construido desde el bootstrap (`efa5d82..HEAD`). Reportó 0 bloqueantes y 9 hallazgos. **Opus verificó cada uno en el código antes de decidir.**
+
+| # | Hallazgo del revisor | Decisión | Motivo |
+|---|---|---|---|
+| VR-1 | Los 8 commands que cambian estado no emiten eventos de dominio (`Raise`). | ❌ Descartado | Ninguna spec ni ADR los pide y no hay consumidores: serían ceremonia sin efecto. Se documentó como excepción en `CLAUDE.md`; se agregan cuando exista un consumidor (recordatorios de pago). |
+| VR-2 | `TerminateLease` es el único command sin `Validator`. | ✅ Aplicado | Consistencia con los otros 7 commands. |
+| VR-3 | El código de error de validación es el nombre de la propiedad, no `{Feature}.{Motivo}`. | ✅ Aceptado como excepción | Es deliberado (RNF-04, corrección `dd6c270`). Documentado en `CLAUDE.md`. |
+| VR-4 | Faltan tests de varios validators. | ✏️ Parcial | Se agregó `RecordPaymentValidatorTests`, que contiene las reglas de RN-12. Se descartaron los validators que solo hacen `NotEmpty(id)`, porque no prueban reglas de negocio. |
+| VR-5 | Faltan tests de integración de `PUT /properties`, `GET /leases` y otros. | ✏️ Parcial — **hallazgo más valioso** | El escenario Gherkin de **HU-03** no tenía test: era un hueco real de trazabilidad. Se agregaron los tests de HU-03 y de CU-02 (`PUT`). |
+| VR-6 | Dos tests sin `// RN-xx`. | ✅ Aplicado | Alimentan la matriz de trazabilidad. |
+| VR-7 | Paginación inconsistente: Properties no limitaba `pageSize`. | ✅ Aplicado | Ya se había visto en I7 y se dejó pasar; ahora se unificó con el criterio de Leases (1–100). |
+| VR-8 | Diffs con archivos completos reescritos (CRLF → LF). | ✅ Aplicado — **error del orquestador** | Un script de Python de Opus convirtió 10 archivos de CRLF a LF. Se restauraron (`0b00d30`) y se agregó la regla a `CLAUDE.md`. |
+| VR-9 | Contraseña de demo fija en el seeder. | ❌ Descartado | Solo corre en Development, el seeder es idempotente y la contraseña está documentada en el README. |
