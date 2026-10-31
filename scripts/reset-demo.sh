@@ -11,7 +11,15 @@ if pgrep -f "dotnet.*src/Web.Api" >/dev/null; then
 fi
 
 docker compose down
-rm -rf ./.containers/db
+# macOS puede recrear un .DS_Store mientras se borra la carpeta: reintentar.
+for _ in 1 2 3; do
+  rm -rf ./.containers/db 2>/dev/null && break
+  sleep 1
+done
+if [ -e ./.containers/db ]; then
+  echo "No se pudo borrar ./.containers/db" >&2
+  exit 1
+fi
 docker compose up -d postgres
 
 echo "Base reseteada. Ahora: dotnet run --project src/Web.Api  (carga los datos de demo)"
