@@ -20,6 +20,8 @@ public sealed class IntegrationTestWebAppFactory : WebApplicationFactory<Program
     {
         builder.UseSetting("ConnectionStrings:Database", _dbContainer.GetConnectionString());
 
+        builder.UseSetting("Seed:Enabled", "false");
+
         // Provide deterministic JWT settings so tokens can be issued and validated in tests.
         builder.UseSetting("Jwt:Secret", "super-duper-secret-value-that-should-be-in-user-secrets");
         builder.UseSetting("Jwt:Issuer", "arriendo-familiar");
